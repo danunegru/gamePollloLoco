@@ -178,7 +178,7 @@ class Endboss extends MovableObject {
             }
         }, 1000);
     }
-
+//
     startAttack() {
         this.isAttacking = true;
         this.screamAudio.play();
