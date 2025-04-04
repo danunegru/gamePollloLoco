@@ -1,0 +1,395 @@
+body {
+    margin: 0;
+    padding: 0;
+    background: url('img/hinterhrundBig.png') no-repeat center center fixed;
+    background-size: cover;
+
+}
+
+body {
+    font-family: 'Permanent Marker', serif;
+}
+
+
+/* Hintergrund für den Startbildschirm */
+.startScreen-image {
+    display: block;
+    position: absolute;
+    width: 100%;
+    max-width: 800px;
+    height: 100%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid black;
+    background-color: black;
+    box-shadow: 0 0 15px 5px white;
+    border-radius: 20px;
+    touch-action: none;
+    user-select: none;
+}
+
+#startScreen {
+
+    display: block;
+    position: absolute;
+    z-index: 10;
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid black;
+    background-color: black;
+    box-shadow: 0 0 15px 5px white;
+    border-radius: 20px;
+    touch-action: none;
+    user-select: none;
+    height: auto;
+    aspect-ratio: 800 / 480;
+
+}
+
+/* Logo oben mittig platzieren */
+#startScreen h1 {
+    color: white;
+    font-size: 36px;
+    text-align: center;
+    position: absolute;
+    top: -60px;
+    left: 50%;
+    transform: translateX(-50%);
+    margin: 0;
+    z-index: 20;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Start-Button zentrieren und klickbar machen */
+#startButton {
+    cursor: pointer;
+    border-radius: 50%;
+    top: 20%;
+    left: 50%;
+    z-index: 20;
+}
+
+/* Hover-Effekt für Start-Button */
+#startButton:active {
+    opacity: 0.6;
+    /* Verblasst leicht */
+    transform: scale(0.95);
+    /* Leichtes Einziehen beim Drücken */
+}
+
+#startButton:hover {
+    transform: scale(1.05);
+    /* Button leicht vergrößern */
+    opacity: 0.6;
+    /* Verblasst leicht */
+}
+
+
+/* Start-Button zentrieren */
+#startScreen .button {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateX(-50%);
+}
+
+.button:hover {
+    transform: scale(1.05);
+}
+
+.desk-bigView {
+    position: absolute;
+    height: 70px;
+    cursor: pointer;
+}
+
+.desk-bigView:hover {
+    transform: scale(1.05);
+    /* Button leicht vergrößern */
+    opacity: 0.6;
+    /* Verblasst leicht */
+}
+#soundControl {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    cursor: pointer;
+}
+
+#soundButton {
+    width: 40px;
+    height: 40px;
+    transition: transform 0.2s;
+}
+
+#soundButton:hover {
+    transform: scale(1.1);
+}
+
+/* Canvas mittig platzieren */
+/* Canvas mittig platzieren */
+canvas {
+    display: block;
+    position: absolute;
+    width: 100%;
+    max-width: 800px;
+    height: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid black;
+    background-color: black;
+    box-shadow: 0 0 15px 5px white;
+    border-radius: 20px;
+    touch-action: none;
+    /* Verhindert, dass der Browser den Touch als Scroll interpretiert */
+    user-select: none;
+    /* Verhindert Text-Auswahl */
+}
+
+/* Steuerungsbereich */
+#controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    position: fixed;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+}
+
+.control-button {
+    background-color: #d89b00;
+    color: white;
+    font-size: 16px;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 20px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.control-button:hover {
+    background-color: #e0a800;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+#infoButton {
+    pointer-events: auto;
+    opacity: 1;
+}
+
+#infoButton:hover {
+    background-color: #e0a800;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+}
+
+.mobile-controls {
+    display: flex;
+    top: 540px;
+    justify-content: center;
+    gap: 20px;
+    position: relative;
+    z-index: 100;
+}
+
+
+.mobile-control {
+    background-color: rgba(255, 255, 255, 0.8);
+    color: black;
+    border: 2px solid black;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+    text-align: center;
+    pointer-events: auto;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.mobile-control:hover {
+    background-color: rgba(200, 200, 200, 0.8);
+    transform: scale(1.1);
+}
+
+.at-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    overflow: hidden;
+    background-color: rgba(151, 149, 149, 0.37);
+    z-index: 2000;
+    display: none;
+    /* Standardmäßig versteckt */
+}
+
+.content {
+    position: absolute;
+    background-color: #a87c35;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    min-height: 20%;
+    border-radius: 25px;
+    padding: 50px;
+    color: white;
+    font-size: 21px;
+
+}
+
+.control-button {
+    font-family: 'Permanent Marker', serif;
+}
+
+#orientationMessage {
+    display: none;
+    /* Standardmäßig versteckt */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    z-index: 1000;
+}
+
+@media (max-width: 630px) and (orientation: portrait) {
+    #orientationMessage {
+        display: block;
+        /* Zeige die Nachricht im Hochformat an */
+    }
+}
+
+
+/* ---------- 📱 RESPONSIVE DESIGN (angepasst an Vorgabe) ---------- */
+
+/* Mobile Ansicht - Bildschirmbreite unter 720px */
+@media only screen and (max-width: 720px) {
+    canvas {
+        width: 100%;
+    }
+
+
+}
+
+/* Mobile Ansicht - Bildschirmhöhe unter 480px */
+@media only screen and (max-height: 630px) {
+    canvas {
+        height: 100vh;
+    }
+
+    #startScreen {
+        width: 93%;
+        height: 98%;
+        aspect-ratio: 800 / 480;
+    }
+
+
+    canvas {
+        width: 93%;
+        height: 98%;
+        aspect-ratio: 800 / 480;
+    }
+
+  
+
+}
+
+/* Anpassungen für mittelgroße Tablets */
+@media (max-width: 1024px) {
+    #startScreen {
+        width: 93%;
+        /* height: auto; */
+        aspect-ratio: 800 / 480;
+    }
+
+    .content {
+        padding: 27px;
+        color: white;
+        font-size: 18px;
+    }
+
+    canvas {
+        width: 93%;
+        /* height: auto; */
+        aspect-ratio: 800 / 480;
+    }
+
+    .mobile-control {
+        width: 40px;
+        height: 40px;
+    }
+
+    .control-button {
+        padding: initial;
+    }
+}
+
+/* Kleine Smartphones - Steuerung anpassen */
+@media (max-width: 630px) {
+    #mobile-controls {
+        display: flex;
+        justify-content: center;
+    }
+
+    #controls {
+        display: none;
+    }
+
+    #startButton {
+        height: 120px;
+    }
+    #startScreen h1 {
+        font-size: 19px;
+    }
+}
+
+
+/* Falls Bildschirmhöhe unter 320px fällt, wird das Canvas kleiner */
+@media only screen and (max-height: 524px) {
+    /* canvas {
+        height: 93vh;
+        top: 5%;
+        transform: translate(-50%, 0);
+        touch-action: none;
+        /* 🟢 WICHTIG: Verhindert, dass der Browser Touch blockiert */
+    /* } */
+
+    #controls {
+        display: none;
+    }
+
+    .mobile-controls {
+        position: absolute;
+        bottom: 10px;
+        /* ✅ Buttons bleiben sichtbar */
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}
+
+@media (max-width: 680px) {
+    #startButton {
+        height: 150px;
+    }
+}
