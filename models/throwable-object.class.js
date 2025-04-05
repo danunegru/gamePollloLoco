@@ -1,4 +1,7 @@
 class ThrowableObject extends MovableObject {
+    static throwCooldown = false;
+    static COOLDOWN_TIME = 800; // 800ms Wartezeit zwischen Würfen
+    
     constructor(x, y, direction, world) {
         super().loadImage('img/7_statusbars/3_icons/icon_salsa_bottle.png');
         this.x = x;
@@ -35,10 +38,24 @@ class ThrowableObject extends MovableObject {
         this.throw();
     }
 
+    static canThrow() {
+        return !this.throwCooldown;
+    }
+
+    static activateCooldown() {
+        this.throwCooldown = true;
+        setTimeout(() => {
+            this.throwCooldown = false;
+        }, this.COOLDOWN_TIME);
+    }
+
     throw() {
+        if (ThrowableObject.throwCooldown) return;
+        
         this.applyGravity();
         this.movementInterval = setInterval(() => this.move(), 25);
         this.animateThrow();
+        ThrowableObject.activateCooldown();
     }
 
     move() {

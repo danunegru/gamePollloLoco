@@ -1,7 +1,7 @@
 class EndbossBar extends StatusBar {
 
     constructor() {
-        super();//damit wir die metoden des übergeordneten objects initialisieren
+        super();
         this.IMAGES = [
             'img/7_statusbars/2_statusbar_endboss/blue/blue0.png',
             'img/7_statusbars/2_statusbar_endboss/blue/blue20.png',
@@ -13,9 +13,9 @@ class EndbossBar extends StatusBar {
         
 
         this.loadImages(this.IMAGES);
-        this.x = 570; // Mehr in der Mitte des Canvas
-        this.y = 20;  // Weiter oben für bessere Sichtbarkeit
-        this.setPercentage(100); // Initialwert
+        this.x = 570; 
+        this.y = 20;  
+        this.setPercentage(100);
     }
 }
 

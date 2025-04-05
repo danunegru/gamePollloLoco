@@ -2,9 +2,7 @@ class Chicken extends MovableObject {
     y = 340;
     height = 80;
     width = 100;
-    isDead = false; // Standardmäßig ist das Huhn lebendig
-    isMoving = false; // Neue Eigenschaft, um die Bewegung zu steuern
-    walking_sound = new Audio('audio/chicken.mp3');
+    isDead = false; isMoving = false; walking_sound = new Audio('audio/chicken.mp3');
 
 
     IMAGES_WALKING = [
@@ -19,63 +17,47 @@ class Chicken extends MovableObject {
 
     constructor() {
         super().loadImage(this.IMAGES_WALKING[0]);
-        this.loadImages(this.IMAGES_WALKING); // Lade die Laufbilder
-        this.loadImages(this.IMAGES_DEAD); // Lade die Death-Bilder
-        this.x = 1000 + Math.random() * 500; // Hühner starten weiter hinten
-        this.speed = 0.15 + Math.random() * 0.35; // Zufällige Geschwindigkeit
+        this.loadImages(this.IMAGES_WALKING);
+        this.loadImages(this.IMAGES_DEAD);
+        this.x = 1000 + Math.random() * 500;
+        this.speed = 0.15 + Math.random() * 0.35;
     }
 
-    /**
-     * Startet die Bewegung des Huhns.
-     */
     startMoving() {
         if (!this.isMoving) {
             this.isMoving = true;
-            this.animate(); // Starte die Animation
+            this.animate();
         }
     }
 
-    /**
-     * Animiert das Huhn (Bewegung und Laufanimation).
-     */
+
     animate() {
-        // Bewegung nach links
         this.movementInterval = setInterval(() => {
             if (this.isDead === false && this.isMoving) {
                 this.moveLeft();
             }
-        }, 1000 / 60); // 60 FPS
+        }, 1000 / 60);
 
-        // Laufanimation abspielen
         this.animationInterval = setInterval(() => {
             if (this.isDead === false && this.isMoving) {
                 this.playAnimation(this.IMAGES_WALKING);
             }
-        }, 200); // Wechsel alle 200 ms
+        }, 200);
     }
 
-    /**
-     * Spielt die Todesanimation des Huhns ab.
-     */
+
     playDeathAnimation() {
         this.isDead = true;
-        this.speed = 0; // Stoppe die Bewegung
-        this.img = this.imageCache[this.IMAGES_DEAD[0]]; // Setze das Todesbild
-
-        // Stoppe die Intervalle für Bewegung und Animation
+        this.speed = 0;
+        this.img = this.imageCache[this.IMAGES_DEAD[0]];
         clearInterval(this.movementInterval);
         clearInterval(this.animationInterval);
-
-        // Entferne das Huhn nach 2 Sekunden
         setTimeout(() => {
             this.markForRemoval();
         }, 2000);
     }
 
-    /**
-     * Markiert das Huhn zur Entfernung aus der Spielwelt.
-     */
     markForRemoval() {
-        this.isMarkedForRemoval = true; // Markiere das Huhn, um es aus der Spielwelt zu entfernen
+        this.isMarkedForRemoval = true;
     }
 }

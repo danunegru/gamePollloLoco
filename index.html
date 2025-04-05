@@ -8,9 +8,20 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap" rel="stylesheet">
+    
+    <link rel="apple-touch-icon" sizes="180x180" href="./favicon_io/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="./favicon_io/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="./favicon_io/favicon-16x16.png">
+    <link rel="manifest" href="./favicon_io/site.webmanifest">
+
 </head>
 
 <body onload="init()">
+
+    <button id="muteButton">
+        <img src="img/muteButton.png" alt="Mute/Unmute" id="muteButtonImg">
+    </button>
+    
     <div id="orientationMessage">
         Bitte das Bildschirm ins Querformat drehen.
     </div>
@@ -19,7 +30,6 @@
         <img class="startScreen-image" src="img/9_intro_outro_screens/start/startscreen_1.png" alt="Start Screen">
         <h1>EL POLO LOCO</h1>
         <img class="button" id="startButton" src="img/playButtonPng.png" alt="">
-        <!-- <img class="desk-bigView" src="img/deskSizer-removebg-preview.png" alt="" onclick="toggleFullscreen()"> -->
     </div>
 
     <div class="mainDiv-canvas">
@@ -68,9 +78,7 @@
     <script src="models/gameover-screen.class.js"></script>
     <script src="models/win-screen.class.js"></script>
 
-    <!-- Einfaches Bild-Preloading OHNE Änderungen am Spielcode -->
     <script>
-        // Minimaler Preload für die wichtigsten Bilder
         const preloadImages = [
             'img/2_character_pepe/2_walk/W-21.png',
             'img/7_statusbars/1_statusbar/2_statusbar_health/orange/0.png'

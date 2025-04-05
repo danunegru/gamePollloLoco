@@ -3,11 +3,14 @@ let world;
 let keyboard = new Keyboard();
 let isTouchActive = false;
 let gameStarted = false;
+let backgroundSound;
+let isMuted = false;
 
 function init() {
     canvas = document.getElementById('canvas');
     const startScreen = document.getElementById('startScreen');
     const startButton = document.getElementById('startButton');
+    initMuteButton(); // Vor dem Spielstart initialisieren
 
     startButton.addEventListener('click', () => {
         startScreen.style.display = 'none';
@@ -16,21 +19,20 @@ function init() {
     });
 }
 
+
 function startMainGame() {
     if (!gameStarted) {
         gameStarted = true;
         world = new World(canvas, keyboard);
 
-        // Hintergrundmusik mit Error-Handling
-        const backgroundSound = new Audio('audio/backgroundsound.wav');
-        backgroundSound.loop = true;
-        backgroundSound.volume = 0.5;
-        backgroundSound.play().catch(e => {});
+        // Sound initialisieren und an world übergeben
+        world.backgroundSound = new Audio('audio/backgroundsound.wav');
+        world.backgroundSound.loop = true;
+        world.backgroundSound.volume = 0.5;
+        world.backgroundSound.muted = isMuted; // Initialen Status setzen
 
-        // Hühnerbewegung starten
+        world.backgroundSound.play().catch(e => console.log("Audio play error:", e));
         startChickens();
-
-        // Steuerungs-Events
         setupControlEvents();
     }
 }
@@ -38,7 +40,7 @@ function startMainGame() {
 function startChickens() {
     if (world?.level?.enemies) {
         world.level.enemies.forEach(enemy => {
-            if ((enemy instanceof Chicken || enemy instanceof SmallChicken) && 
+            if ((enemy instanceof Chicken || enemy instanceof SmallChicken) &&
                 typeof enemy.startMoving === 'function') {
                 enemy.startMoving();
             }
@@ -47,7 +49,6 @@ function startChickens() {
 }
 
 function setupControlEvents() {
-    // Touch/Maus Events
     ['mousedown', 'touchstart'].forEach(evt => {
         canvas.addEventListener(evt, (e) => {
             isTouchActive = true;
@@ -61,8 +62,6 @@ function setupControlEvents() {
             resetTouchAfterDelay();
         });
     });
-
-    // Tastatur Events
     window.addEventListener('keydown', (e) => {
         if (!isTouchActive) handleKeyboardPress(e, true);
     });
@@ -99,7 +98,7 @@ function getTouchPosition(event) {
 }
 
 function handleKeyboardPress(e, isPressed) {
-    switch(e.key) {
+    switch (e.key) {
         case 'ArrowRight': keyboard.RIGHT = isPressed; break;
         case 'ArrowLeft': keyboard.LEFT = isPressed; break;
         case 'ArrowUp': keyboard.UP = isPressed; break;
@@ -109,32 +108,27 @@ function handleKeyboardPress(e, isPressed) {
     }
 }
 
-// Vollbild-Funktion
 function toggleFullscreen() {
     if (!document.fullscreenElement) {
         canvas.requestFullscreen?.() ||
-        canvas.webkitRequestFullscreen?.();
+            canvas.webkitRequestFullscreen?.();
     } else {
         document.exitFullscreen?.() ||
-        document.webkitExitFullscreen?.();
+            document.webkitExitFullscreen?.();
     }
 }
 
-// Initialisierung
 document.addEventListener('DOMContentLoaded', () => {
-    // Info-Overlay
     document.getElementById("infoButton").addEventListener("click", () => {
         document.getElementById("overlay").style.display = "block";
     });
-    document.getElementById("overlay").addEventListener("click", function() {
+    document.getElementById("overlay").addEventListener("click", function () {
         this.style.display = "none";
     });
-
-    // Orientierungsprüfung
     const checkOrientation = () => {
         const message = document.getElementById('orientationMessage');
-        const showMessage = window.innerWidth < 630 && 
-                          window.matchMedia("(orientation: portrait)").matches;
+        const showMessage = window.innerWidth < 630 &&
+            window.matchMedia("(orientation: portrait)").matches;
         message.style.display = showMessage ? 'block' : 'none';
     };
 
@@ -142,3 +136,21 @@ document.addEventListener('DOMContentLoaded', () => {
     window.addEventListener('resize', checkOrientation);
     window.addEventListener('orientationchange', checkOrientation);
 });
+
+function initMuteButton() {
+    const muteButton = document.getElementById('muteButton');
+    muteButton.addEventListener('click', toggleMute);
+} 
+function toggleMute() {
+    isMuted = !isMuted;
+
+    // Button-Bild aktualisieren
+    const muteButtonImg = document.getElementById('muteButtonImg');
+    muteButtonImg.src = isMuted ? "img/mute-button.png" : "img/muteButton.png";
+
+    // Sound stumm schalten
+    if (world && world.backgroundSound) {
+        world.backgroundSound.muted = isMuted;
+    }
+
+}

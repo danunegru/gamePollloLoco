@@ -23,19 +23,15 @@ class World {
         this.setWorld();
         this.run();
 
-        // Initialisiere Event-Listener basierend auf der Bildschirmgröße
         this.updateEventListeners();
     }
 
-    // Methode zum Hinzufügen/Entfernen von Event-Listenern
     updateEventListeners() {
-        // Entferne alle Event-Listener, falls sie bereits existieren
         this.canvas.removeEventListener('mousedown', this.handleCanvasPress);
         this.canvas.removeEventListener('mouseup', this.handleCanvasPress);
         this.canvas.removeEventListener('touchstart', this.handleCanvasPress);
         this.canvas.removeEventListener('touchend', this.handleCanvasPress);
 
-        // Füge Event-Listener nur hinzu, wenn die Bildschirmbreite < 630px oder die Höhe < 800px ist
         if (window.innerWidth < 630 || window.innerHeight < 800) {
             this.canvas.addEventListener('mousedown', (event) => this.handleCanvasPress(event, true));
             this.canvas.addEventListener('mouseup', (event) => this.handleCanvasPress(event, false));
@@ -48,12 +44,11 @@ class World {
         this.character.world = this;
         this.level.enemies.forEach(enemy => {
             if (enemy instanceof Endboss) {
-                enemy.world = this; // Setze die Welt für den Endboss
+                enemy.world = this;
             }
         });
     }
 
-    // Virtuelle Button-Positionen (Canvas)
     buttonPositions = {
         left: { x: 50, y: 400, width: 60, height: 60 },
         up: { x: 150, y: 400, width: 60, height: 60 },
@@ -113,31 +108,29 @@ class World {
         this.keyboard.D = false;
     }
 
-    // Virtuelle Buttons im Canvas zeichnen
+
     drawButtons() {
-        // Buttons nur zeichnen, wenn die Bildschirmbreite < 630px oder die Höhe < 800px ist
         if (window.innerWidth < 630 || window.innerHeight < 600) {
-            this.ctx.lineWidth = 2; // Rahmenstärke
+            this.ctx.lineWidth = 2;
 
             for (const key in this.buttonPositions) {
                 let btn = this.buttonPositions[key];
 
-                // Zeichne den Button (Kreis)
                 this.ctx.beginPath();
                 this.ctx.arc(
-                    btn.x + btn.width / 2, // Mittelpunkt X
-                    btn.y + btn.height / 2, // Mittelpunkt Y
-                    btn.width / 2, // Radius
-                    0, // Startwinkel
-                    2 * Math.PI // Endwinkel (vollständiger Kreis)
+                    btn.x + btn.width / 2,
+                    btn.y + btn.height / 2,
+                    btn.width / 2,
+                    0,
+                    2 * Math.PI
                 );
-                this.ctx.fillStyle = '#e0a800'; // Hintergrundfarbe
+                this.ctx.fillStyle = '#e0a800';
                 this.ctx.fill();
-                this.ctx.strokeStyle = '#b8860b'; // Randfarbe
+                this.ctx.strokeStyle = '#b8860b';
                 this.ctx.stroke();
 
-                // Symbol für die Buttons
-                this.ctx.fillStyle = '#000'; // Textfarbe
+
+                this.ctx.fillStyle = '#000';
                 this.ctx.font = '20px Arial';
                 this.ctx.textAlign = 'center';
                 this.ctx.textBaseline = 'middle';
@@ -153,70 +146,70 @@ class World {
     }
 
     updateCoinBar() {
-        const collectedCoins = 10 - this.coins.length; // Anzahl gesammelter Münzen
-        const percentage = (collectedCoins / 10) * 100; // Prozentualer Fortschritt
-        this.coinBar.setPercentage(percentage); // Fortschrittsanzeige aktualisieren
+        const collectedCoins = 10 - this.coins.length;
+        const percentage = (collectedCoins / 10) * 100;
+        this.coinBar.setPercentage(percentage);
     }
 
     updateBottleBar() {
-        const percentage = (this.character.collectedBottles / 7) * 100; // Prozentualer Fortschritt
-        this.bottleBar.setPercentage(percentage); // Flaschen-Fortschrittsanzeige aktualisieren
+        const percentage = (this.character.collectedBottles / 7) * 100;
+        this.bottleBar.setPercentage(percentage);
     }
 
     run() {
-        if (this.runInterval) return; // Verhindere mehrfaches Starten von run()
+        if (this.runInterval) return;
         this.runInterval = setInterval(() => {
             this.checkCollisions();
             this.checkThrowObjects();
-            this.checkGameOver(); // Prüfe Spielstatus
+            this.checkGameOver();
             this.level.enemies.forEach((enemy) => {
                 if (enemy instanceof Endboss) {
-                    enemy.activateIfClose(this.character.x); // Aktiviere Endboss
+                    enemy.activateIfClose(this.character.x);
                 }
             });
-        }, 200); // Alle 200ms prüfen
+        }, 200);
     }
 
     stopGame() {
-        clearInterval(this.runInterval); // Stoppe das Spiel-Intervall
-        cancelAnimationFrame(this.animationFrame); // Stoppe das Zeichnen
+        clearInterval(this.runInterval);
+        cancelAnimationFrame(this.animationFrame);
     }
 
     checkThrowObjects() {
-        if (this.keyboard.D && this.character.collectedBottles > 0) {
+        if (this.keyboard.D && this.character.collectedBottles > 0 && ThrowableObject.canThrow()) {
             if (this.character.otherDirection) {
-                this.throwBottleLeft(); // Flasche nach links werfen
+                this.throwBottleLeft();
             } else {
-                this.throwBottleRight(); // Flasche nach rechts werfen
+                this.throwBottleRight();
             }
         }
     }
 
     throwBottleLeft() {
-        const startX = this.character.x; // Startposition X
-        const startY = this.character.y + 50; // Startposition Y
-        const direction = -1; // Richtung: links
+        const startX = this.character.x;
+        const startY = this.character.y + 50;
+        const direction = -1;
         const bottle = new ThrowableObject(startX, startY, direction, this);
         this.throwableObjects.push(bottle);
-        this.character.collectedBottles--; // Flaschenanzahl reduzieren
-        this.updateBottleBar(); // Flaschen-Fortschrittsanzeige aktualisieren
+        this.character.collectedBottles--;
+        this.updateBottleBar();
     }
 
     throwBottleRight() {
-        const startX = this.character.x + 100; // Startposition X
-        const startY = this.character.y + 50; // Startposition Y
-        const direction = 1; // Richtung: rechts
+        const startX = this.character.x + 100;
+        const startY = this.character.y + 50;
+        const direction = 1;
         const bottle = new ThrowableObject(startX, startY, direction, this);
         this.throwableObjects.push(bottle);
-        this.character.collectedBottles--; // Flaschenanzahl reduzieren
-        this.updateBottleBar(); // Flaschen-Fortschrittsanzeige aktualisieren
+        this.character.collectedBottles--;
+        this.updateBottleBar();
     }
 
     checkEndbossDefeated() {
         const endbossExists = this.level.enemies.some(
             enemy => enemy instanceof Endboss
         );
-        
+
         if (!endbossExists) {
             this.stopGame();
             this.showWinScreen();
@@ -225,16 +218,24 @@ class World {
 
     checkCollisions() {
         if (!this.character) return;
-    
-        // Gegner-Kollisionen
         this.level.enemies.forEach((enemy) => {
-            // Hühner-Kollisionen
             if (enemy instanceof Chicken || enemy instanceof SmallChicken) {
-                if (this.character.isColliding(enemy) && this.character.speedY < 0) {
-                    this.character.speedY = 15;
-                    enemy.playDeathAnimation();
+                if (this.character.isColliding(enemy)) {
+                    if (this.character.speedY < 0 && !enemy.isDead) {
+                        if (!this.character.justBounced) {
+                            this.character.speedY = 15;
+                            this.character.justBounced = true;
+                            setTimeout(() => {
+                                this.character.justBounced = false;
+                            }, 500);
+                        }
+                        enemy.playDeathAnimation();
+                    } else if (!enemy.isDead && this.character.speedY >= 0) {
+                        this.character.hit();
+                        this.statusBar.setPercentage(this.character.energy);
+                    }
                 }
-    
+
                 this.throwableObjects.forEach((bottle, bottleIndex) => {
                     if (bottle.isColliding(enemy)) {
                         bottle.playSplashSound();
@@ -242,14 +243,8 @@ class World {
                         this.throwableObjects.splice(bottleIndex, 1);
                     }
                 });
-    
-                if (!enemy.isDead && this.character.isColliding(enemy)) {
-                    this.character.hit();
-                    this.statusBar.setPercentage(this.character.energy);
-                }
             }
-    
-            // Endboss-Kollisionen
+
             if (enemy instanceof Endboss && !enemy.isDead) {
                 this.throwableObjects.forEach((bottle, bottleIndex) => {
                     if (bottle.isColliding(enemy)) {
@@ -258,24 +253,21 @@ class World {
                         this.throwableObjects.splice(bottleIndex, 1);
                     }
                 });
-    
+
                 if (this.character.isColliding(enemy)) {
                     this.character.hit();
                     this.statusBar.setPercentage(this.character.energy);
                 }
             }
-        
         });
-    
-        // Münzen sammeln
+
         this.coins.forEach((coin, coinIndex) => {
             if (this.character.isColliding(coin)) {
                 this.coins.splice(coinIndex, 1);
                 this.updateCoinBar();
             }
         });
-    
-        // Flaschen sammeln
+
         this.bottle.forEach((bottle, bottleIndex) => {
             if (this.character.isColliding(bottle)) {
                 if (this.character.canCollectBottle()) {
@@ -287,47 +279,40 @@ class World {
         });
     }
 
-    // In der World-Klasse:
-// In World.class.js
-async checkGameOver() {
-    // Character Tod
-    if (this.character.isDead() && !this.character.isDeadState) {
-        await this.character.die();
-        this.stopGame();
-        this.showGameOverScreen();
-        return;
-    }
-    
-    // Endboss Tod
-    const endboss = this.level.enemies.find(e => e instanceof Endboss);
-    if (endboss && endboss.energy <= 0 && !endboss.isMarkedForRemoval) {
-        await endboss.die(); // Warte auf die komplette Animation
-        
-        // Sicherstellen, dass der Endboss wirklich tot ist
-        if (endboss.isMarkedForRemoval) {
+    async checkGameOver() {
+        if (this.character.isDead() && !this.character.isDeadState) {
+            await this.character.die();
             this.stopGame();
-            this.showWinScreen();
+            this.showGameOverScreen();
+            return;
+        }
+
+        const endboss = this.level.enemies.find(e => e instanceof Endboss);
+        if (endboss && endboss.energy <= 0 && !endboss.isMarkedForRemoval) {
+            await endboss.die();
+
+            if (endboss.isMarkedForRemoval) {
+                this.stopGame();
+                this.showWinScreen();
+            }
         }
     }
-}
-    
-    
- // In World.class.js
-showWinScreen() {
-    if (this.gameOverShown) return;
-    
-    this.winScreenShown = true;
-    const winScreen = new WinScreen(this.canvas, this.ctx, 'img/9_intro_outro_screens/win/win_2.png');
-    winScreen.display();
-}
 
-showGameOverScreen() {
-    if (this.winScreenShown) return;
-    
-    this.gameOverShown = true;
-    const gameOverScreen = new GameOverScreen(this.canvas, this.ctx, 'img/9_intro_outro_screens/game_over/game over.png');
-    gameOverScreen.display();
-}
+    showWinScreen() {
+        if (this.gameOverShown) return;
+
+        this.winScreenShown = true;
+        const winScreen = new WinScreen(this.canvas, this.ctx, 'img/9_intro_outro_screens/win/win_2.png');
+        winScreen.display();
+    }
+
+    showGameOverScreen() {
+        if (this.winScreenShown) return;
+
+        this.gameOverShown = true;
+        const gameOverScreen = new GameOverScreen(this.canvas, this.ctx, 'img/9_intro_outro_screens/game_over/game over.png');
+        gameOverScreen.display();
+    }
 
     generateCoins() {
         let coins = [];
@@ -350,27 +335,21 @@ showGameOverScreen() {
     }
 
     draw() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); // Canvas löschen
-        this.ctx.translate(this.camera_x, 0); // Kamera verschieben
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        this.ctx.translate(this.camera_x, 0);
 
-        // Hintergrund zuerst zeichnen
         this.addObjectsToMap(this.level.backgroundObjects);
 
-        this.ctx.translate(-this.camera_x, 0); // Kamera zurücksetzen
-        // Feste Objekte (Lebensleisten etc.) zeichnen
-        this.addToMap(this.statusBar);
+        this.ctx.translate(-this.camera_x, 0); this.addToMap(this.statusBar);
         this.addToMap(this.bottleBar);
-        this.addToMap(this.endbossBar); // Endboss-Lebensleiste
+        this.addToMap(this.endbossBar);
         this.addToMap(this.coinBar);
 
-        this.ctx.translate(this.camera_x, 0); // Kamera erneut verschieben
+        this.ctx.translate(this.camera_x, 0);
 
-        // Zeichne den Charakter nur, wenn er existiert
         if (this.character) {
             this.addToMap(this.character);
         }
-
-        // Restliche Objekte (Gegner, Wolken, Flaschen, Münzen) zeichnen
         this.addObjectsToMap(this.level.clouds);
         this.addObjectsToMap(this.level.enemies);
         this.addObjectsToMap(this.throwableObjects);
@@ -380,15 +359,9 @@ showGameOverScreen() {
             this.level.enemies.filter(enemy => !enemy.isDead)
         );
 
-        this.ctx.translate(-this.camera_x, 0); // Kamera zurücksetzen
-
-        // Buttons im Canvas zeichnen
+        this.ctx.translate(-this.camera_x, 0);
         this.drawButtons();
-
-        // Event-Listener basierend auf der Bildschirmgröße aktualisieren
         this.updateEventListeners();
-
-        // Zeichnung wiederholen
         this.animationFrame = requestAnimationFrame(() => {
             this.draw();
         });
@@ -422,7 +395,10 @@ showGameOverScreen() {
         this.ctx.restore();
     }
 
-   
-    
-    
+    muteAllSounds() {
+        if (this.backgroundSound) {
+            this.backgroundSound.muted = !this.backgroundSound.muted;
+        }
+        // Füge hier weitere Sounds hinzu wenn nötig
+    }
 }

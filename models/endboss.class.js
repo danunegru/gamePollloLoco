@@ -50,7 +50,7 @@ class Endboss extends MovableObject {
         this.loadImages(this.IMAGES_WALKING);
         this.loadImages(this.IMAGES_ATTACKING);
         this.loadImages(this.IMAGES_HURT);
-        this.loadImages(this.IMAGES_DIE); // WICHTIG: Death-Bilder müssen geladen sein
+        this.loadImages(this.IMAGES_DIE); 
         this.x = 2400;
         this.speed = 1;
         this.animate();
@@ -67,12 +67,21 @@ class Endboss extends MovableObject {
         if (this.isDead) return;
         
         this.energy -= amount;
-        this.energy = Math.max(0, this.energy); // Energie nicht unter 0 fallen lassen
-        
+        this.energy = Math.max(0, this.energy); 
         if (this.energy <= 0) {
             this.die();
         } else {
             this.playHurtAnimation();
+            this.playHurtSound();
+        }
+    }
+    
+    playHurtSound() {
+        try {
+            this.screamAudio.currentTime = 0; 
+            this.screamAudio.play().catch(e => console.log("Sound error:", e));
+        } catch (e) {
+            console.warn("Sound failed:", e);
         }
     }
 
@@ -103,12 +112,10 @@ class Endboss extends MovableObject {
     die() {
         if (this.isDead) return;
         
-        console.log("Endboss stirbt jetzt!"); // Debug-Log
+        console.log("Endboss stirbt jetzt!"); 
         this.isDead = true;
         clearInterval(this.movementInterval);
         clearInterval(this.animationInterval);
-        
-        // Death-Animation abspielen
         let frame = 0;
         const deathAnim = setInterval(() => {
             if (frame < this.IMAGES_DIE.length) {
@@ -118,7 +125,7 @@ class Endboss extends MovableObject {
                 clearInterval(deathAnim);
                 this.removeFromWorld();
             }
-        }, 100); // Schnelle Animation
+        }, 100); 
     }
 
     removeFromWorld() {
@@ -128,7 +135,6 @@ class Endboss extends MovableObject {
             );
             console.log("Endboss wurde entfernt!");
             
-            // Win-Screen nach kurzer Verzögerung anzeigen
             setTimeout(() => {
                 if (this.world) {
                     this.world.checkEndbossDefeated();

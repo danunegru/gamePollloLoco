@@ -6,11 +6,8 @@ class DrawableObject {
     y = 0;
     height = 200;
     width = 200;
-    missingImagePlaceholder = 'img/fallback.png'; // Fallback-Bild
+    missingImagePlaceholder = 'img/fallback.png'; 
 
-    /**
-     * Ein einzelnes Bild laden und setzen
-     */
     loadImage(path) {
         return new Promise((resolve, reject) => {
             this.img = new Image();
@@ -26,18 +23,12 @@ class DrawableObject {
         });
     }
 
-    /**
-     * Interne Methode, um das Fallback-Bild zu setzen
-     */
     _setFallbackImage() {
         const fallback = new Image();
         fallback.src = this.missingImagePlaceholder;
         this.img = fallback;
     }
 
-    /**
-     * Zeichnet das Bild, falls es vollständig geladen ist
-     */
     draw(ctx) {
         try {
             if (this.img && this.img.complete) {
@@ -48,10 +39,7 @@ class DrawableObject {
         }
     }
 
-    /**
-     * Lädt mehrere Bilder und speichert sie im Cache
-     * Setzt automatisch das erste geladene Bild als aktuelles
-     */
+    
     loadImages(arr) {
         return Promise.all(
             arr.map(path => {
@@ -70,16 +58,12 @@ class DrawableObject {
                 });
             })
         ).then(() => {
-            // Nach dem Laden das erste Bild setzen (wichtig für draw())
             if (arr.length > 0 && this.imageCache[arr[0]]) {
                 this.img = this.imageCache[arr[0]];
             }
         });
     }
 
-    /**
-     * Setzt ein Bild aus dem Cache (z. B. für Animationen)
-     */
     setImageFromCache(path) {
         if (this.imageCache[path]) {
             this.img = this.imageCache[path];
@@ -89,18 +73,13 @@ class DrawableObject {
         }
     }
 
-    /**
-     * Speichert Fallback-Bild im Cache für einen fehlgeschlagenen Pfad
-     */
+  
     _cacheFallback(path) {
         const fallback = new Image();
         fallback.src = this.missingImagePlaceholder;
         this.imageCache[path] = fallback;
     }
 
-    /**
-     * Zeichnet einen Rahmen um das Objekt (nur für bestimmte Klassen)
-     */
     drawFrame(ctx) {
         if (this instanceof Character || this instanceof Chicken) {
             ctx.beginPath();

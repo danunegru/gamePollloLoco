@@ -54,7 +54,7 @@ class WinScreen {
         this.ctx.stroke();
 
         this.ctx.fillStyle = 'black';
-        this.ctx.font = '20px Comic Sans MS';
+        this.ctx.font = '20px "Permanent Marker"';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         this.ctx.fillText('Noch einmal spielen!', this.canvas.width / 2, this.buttonY + this.buttonHeight / 2);
@@ -71,7 +71,7 @@ class WinScreen {
     }
 
     handleTouchMove(event) {
-        event.preventDefault(); // Verhindert das Scrollen der Seite
+        event.preventDefault();
         const touch = event.touches[0];
         const rect = this.canvas.getBoundingClientRect();
         const scaleX = this.canvas.width / rect.width;

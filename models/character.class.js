@@ -1,9 +1,9 @@
 class Character extends MovableObject {
     collectedBottles = 0;
-    maxBottles = 4; // Maximale Flaschen-Kapazität
-    height = 280;
+    maxBottles = 4; height = 280;
     y = 100;
     speed = 5;
+    justBounced = false;
 
     IMAGES_WALKING = [
         'img/2_character_pepe/2_walk/W-21.png',
@@ -73,8 +73,7 @@ class Character extends MovableObject {
     jump_sound = new Audio('audio/222571__coby12388__minijump.wav');
     currentImage = 0;
     isDeadState = false;
-    idleTimer = 0; // Timer für Inaktivität
-
+    idleTimer = 0;
     constructor() {
         super().loadImage('img/2_character_pepe/2_walk/W-21.png');
         this.loadImages(this.IMAGES_WALKING);
@@ -86,14 +85,13 @@ class Character extends MovableObject {
         this.applyGravity();
         this.animate();
         this.jump_sound.load();
+
     }
 
-    // Prüft, ob der Charakter noch Flaschen sammeln kann
     canCollectBottle() {
         return this.collectedBottles < this.maxBottles;
     }
 
-    // Fügt eine Flasche hinzu (wenn möglich)
     addBottle() {
         if (this.canCollectBottle()) {
             this.collectedBottles++;
@@ -110,26 +108,25 @@ class Character extends MovableObject {
                     this.moveRight();
                     this.otherDirection = false;
                     this.walking_sound.play();
-                    this.idleTimer = 0; // Timer zurücksetzen bei Bewegung
+                    this.idleTimer = 0;
                 }
 
                 if (this.world.keyboard.LEFT && this.x > 0) {
                     this.moveLeft();
                     this.walking_sound.play();
                     this.otherDirection = true;
-                    this.idleTimer = 0; // Timer zurücksetzen bei Bewegung
+                    this.idleTimer = 0;
                 }
 
                 if (this.world.keyboard.SPACE && !this.isAboveGround()) {
                     this.jump();
-                    this.idleTimer = 0; // Timer zurücksetzen bei Sprung
+                    this.idleTimer = 0;
                 }
 
                 this.world.camera_x = -this.x + 100;
             }
         }, 1000 / 60);
 
-        // Animationen für Bewegung, Springen, Verletzungen und Tod
         setInterval(() => {
             if (this.isDead()) {
                 this.die();
@@ -140,86 +137,82 @@ class Character extends MovableObject {
             } else {
                 if (this.world.keyboard.RIGHT || this.world.keyboard.LEFT) {
                     this.playAnimation(this.IMAGES_WALKING);
-                    this.idleTimer = 0; // Timer zurücksetzen bei Bewegung
+                    this.idleTimer = 0;
                 }
             }
         }, 50);
 
-        // Separate Animation für STAY_NORMAL mit langsamerem Intervall
         setInterval(() => {
             if (!this.isDeadState && !this.isHurt() && !this.isAboveGround() && !(this.world.keyboard.RIGHT || this.world.keyboard.LEFT)) {
-                this.idleTimer += 200; // Timer erhöhen (200ms pro Intervall)
-                if (this.idleTimer < 5000) { // 5000ms = 5 Sekunden
+                this.idleTimer += 200; if (this.idleTimer < 5000) {
                     this.playAnimation(this.STAY_NORMAL);
                 } else {
                     this.playAnimation(this.STAY_LONG);
                 }
             }
-        }, 200); // Langsameres Intervall für STAY_NORMAL (200ms)
+        }, 200);
     }
 
     isDead() {
         return this.energy <= 0;
     }
 
-  // In Character.class.js
-die() {
-    return new Promise((resolve) => {
-        if (!this.isDeadState) {
-            this.isDeadState = true;
-            let animationCompleted = false;
-            
-            // Sterbeanimation abspielen
-            let index = 0;
-            const dieInterval = setInterval(() => {
-                if (index < this.IMAGES_DEAD.length) {
-                    this.img = this.imageCache[this.IMAGES_DEAD[index]];
-                    index++;
-                } else {
-                    clearInterval(dieInterval);
-                    animationCompleted = true;
-                    resolve();
-                }
-            }, 200);
+    die() {
+        return new Promise((resolve) => {
+            if (!this.isDeadState) {
+                this.isDeadState = true;
+                let animationCompleted = false;
 
-            // Sicherstellen, dass die Animation nicht hängt
-            setTimeout(() => {
-                if (!animationCompleted) {
-                    clearInterval(dieInterval);
-                    resolve();
-                }
-            }, 2000);
-        }
-    });
-}
+                let index = 0;
+                const dieInterval = setInterval(() => {
+                    if (index < this.IMAGES_DEAD.length) {
+                        this.img = this.imageCache[this.IMAGES_DEAD[index]];
+                        index++;
+                    } else {
+                        clearInterval(dieInterval);
+                        animationCompleted = true;
+                        resolve();
+                    }
+                }, 200);
+
+                setTimeout(() => {
+                    if (!animationCompleted) {
+                        clearInterval(dieInterval);
+                        resolve();
+                    }
+                }, 2000);
+            }
+        });
+    }
 
     playDieAnimation() {
         return new Promise((resolve) => {
             let index = 0;
             const interval = setInterval(() => {
                 if (index < this.IMAGES_DEAD.length) {
-                    this.img = this.imageCache[this.IMAGES_DEAD[index]]; // Sterbeanimation Bild setzen
+                    this.img = this.imageCache[this.IMAGES_DEAD[index]]; 
                     index++;
                 } else {
                     clearInterval(interval);
-                    resolve(); // Animation beendet → dann erst Game Over
+                    resolve();
                 }
-            }, 300); // Langsame Animation mit 300ms pro Frame für besseren Effekt
+            }, 300);
         });
     }
 
-
     jump() {
-        if (!this.isAboveGround()) {  // Verhindert Doppelsprünge
-            this.speedY = 25;  // Sprungkraft
+        if (!this.isAboveGround()) {
+            const originalY = this.y;
+            this.speedY = 25;
+            const gravityInterval = setInterval(() => {
+                if (!this.isAboveGround() && this.speedY <= 0) {
+                    this.y = originalY;
+                    this.speedY = 0;
+                    clearInterval(gravityInterval);
+                }
+            }, 1000 / 60);
 
-            // Sprung-Sound abspielen (mit Error-Handling)
-            this.jump_sound.play().catch(e => {
-                console.warn("Sound konnte nicht abgespielt werden:", e);
-            });
-
-            // Optional: Sound zurückspulen falls schon läuft
-            this.jump_sound.currentTime = 0;
+            this.jump_sound.play().catch(e => console.warn("Sound error:", e));
         }
     }
 }

@@ -11,8 +11,7 @@ class GameOverScreen {
     }
 
     display() {
-        // **EXAKTE Abdunkelung wie im "You Win"-Screen**
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.6)'; 
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
         const image = new Image();
@@ -55,7 +54,7 @@ class GameOverScreen {
         this.ctx.stroke();
 
         this.ctx.fillStyle = 'black';
-        this.ctx.font = '22px Comic Sans MS';
+        this.ctx.font = '22px "Permanent Marker"';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
         this.ctx.fillText('Noch einmal spielen!', this.canvas.width / 2, this.buttonY + this.buttonHeight / 2);
@@ -72,7 +71,7 @@ class GameOverScreen {
     }
 
     handleTouchMove(event) {
-        event.preventDefault(); 
+        event.preventDefault();
         const touch = event.touches[0];
         const rect = this.canvas.getBoundingClientRect();
         const scaleX = this.canvas.width / rect.width;

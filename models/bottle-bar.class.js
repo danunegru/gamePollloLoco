@@ -1,7 +1,7 @@
 class BottleBar extends StatusBar {
 
     constructor() {
-        super();//damit wir die metoden des übergeordneten objects initialisieren
+        super();
         this.IMAGES = [
             'img/7_statusbars/1_statusbar/3_statusbar_bottle/blue/0.png',
             'img/7_statusbars/1_statusbar/3_statusbar_bottle/blue/20.png',
@@ -13,7 +13,7 @@ class BottleBar extends StatusBar {
         this.loadImages(this.IMAGES);
         this.x = 40;
         this.y = 53;
-        this.setPercentage(100); // Initialwert
+        this.setPercentage(100); 
     }
 }
 
