@@ -10,7 +10,7 @@ function init() {
     canvas = document.getElementById('canvas');
     const startScreen = document.getElementById('startScreen');
     const startButton = document.getElementById('startButton');
-    initMuteButton(); // Vor dem Spielstart initialisieren
+    initMuteButton();
 
     startButton.addEventListener('click', () => {
         startScreen.style.display = 'none';
@@ -25,17 +25,21 @@ function startMainGame() {
         gameStarted = true;
         world = new World(canvas, keyboard);
 
-        // Sound initialisieren und an world übergeben
         world.backgroundSound = new Audio('audio/backgroundsound.wav');
         world.backgroundSound.loop = true;
         world.backgroundSound.volume = 0.5;
-        world.backgroundSound.muted = isMuted; // Initialen Status setzen
+        world.backgroundSound.muted = isMuted;
 
         world.backgroundSound.play().catch(e => console.log("Audio play error:", e));
         startChickens();
         setupControlEvents();
+
+        // ⬅️ WICHTIG: Alle Sounds stummschalten, falls isMuted aktiv ist
+        setGlobalMute(isMuted);
     }
 }
+
+
 
 function startChickens() {
     if (world?.level?.enemies) {
@@ -140,17 +144,48 @@ document.addEventListener('DOMContentLoaded', () => {
 function initMuteButton() {
     const muteButton = document.getElementById('muteButton');
     muteButton.addEventListener('click', toggleMute);
-} 
+}
+
 function toggleMute() {
     isMuted = !isMuted;
-
-    // Button-Bild aktualisieren
     const muteButtonImg = document.getElementById('muteButtonImg');
     muteButtonImg.src = isMuted ? "img/mute-button.png" : "img/muteButton.png";
+    setGlobalMute(isMuted);
+}
 
-    // Sound stumm schalten
-    if (world && world.backgroundSound) {
-        world.backgroundSound.muted = isMuted;
+function setGlobalMute(muted) {
+    // Hintergrundmusik
+    if (world?.backgroundSound) {
+        world.backgroundSound.muted = muted;
     }
 
+    // Charakter-Sounds
+    if (world?.character) {
+        world.character.walking_sound.muted = muted;
+        world.character.jump_sound.muted = muted;
+    }
+
+    // Endboss-Sounds
+    if (world?.level?.enemies) {
+        world.level.enemies.forEach(enemy => {
+            if (enemy instanceof Endboss) {
+                enemy.screamAudio.muted = muted;
+                enemy.indianScreamAudio.muted = muted;
+            }
+        });
+    }
+
+    // Flaschen-Sounds
+    if (world?.throwableObjects?.length) {
+        world.throwableObjects.forEach(obj => {
+            if (obj instanceof ThrowableObject) {
+                obj.splashSound.muted = muted;
+            }
+        });
+    }
+       // ✅ Flaschenwurf-Sound muten
+       if (ThrowableObject?.globalSplashSound) {
+        ThrowableObject.globalSplashSound.muted = muted;
+    }
 }
+

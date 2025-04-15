@@ -1,6 +1,7 @@
 class World {
     character = new Character();
-    level = level1;
+    level = createLevel1();
+
     canvas;
     ctx;
     keyboard;
@@ -152,7 +153,7 @@ class World {
     }
 
     updateBottleBar() {
-        const percentage = (this.character.collectedBottles / 7) * 100;
+        const percentage = (this.character.collectedBottles / this.character.maxBottles) * 100;
         this.bottleBar.setPercentage(percentage);
     }
 
@@ -222,13 +223,6 @@ class World {
             if (enemy instanceof Chicken || enemy instanceof SmallChicken) {
                 if (this.character.isColliding(enemy)) {
                     if (this.character.speedY < 0 && !enemy.isDead) {
-                        if (!this.character.justBounced) {
-                            this.character.speedY = 15;
-                            this.character.justBounced = true;
-                            setTimeout(() => {
-                                this.character.justBounced = false;
-                            }, 500);
-                        }
                         enemy.playDeathAnimation();
                     } else if (!enemy.isDead && this.character.speedY >= 0) {
                         this.character.hit();
@@ -337,19 +331,13 @@ class World {
     draw() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.translate(this.camera_x, 0);
-
+    
         this.addObjectsToMap(this.level.backgroundObjects);
-
-        this.ctx.translate(-this.camera_x, 0); this.addToMap(this.statusBar);
-        this.addToMap(this.bottleBar);
-        this.addToMap(this.endbossBar);
-        this.addToMap(this.coinBar);
-
-        this.ctx.translate(this.camera_x, 0);
-
+    
         if (this.character) {
             this.addToMap(this.character);
         }
+    
         this.addObjectsToMap(this.level.clouds);
         this.addObjectsToMap(this.level.enemies);
         this.addObjectsToMap(this.throwableObjects);
@@ -358,14 +346,23 @@ class World {
         this.addObjectsToMap(
             this.level.enemies.filter(enemy => !enemy.isDead)
         );
-
-        this.ctx.translate(-this.camera_x, 0);
+    
+        this.ctx.translate(-this.camera_x, 0); // Kamera zurücksetzen
+    
+        // 👇 Jetzt ganz zum Schluss: Statusbars im Vordergrund
+        this.addToMap(this.statusBar);
+        this.addToMap(this.bottleBar);
+        this.addToMap(this.endbossBar);
+        this.addToMap(this.coinBar);
+    
         this.drawButtons();
         this.updateEventListeners();
+    
         this.animationFrame = requestAnimationFrame(() => {
             this.draw();
         });
     }
+    
 
     addObjectsToMap(objects) {
         objects.forEach(o => {

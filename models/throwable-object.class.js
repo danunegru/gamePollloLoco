@@ -1,7 +1,10 @@
 class ThrowableObject extends MovableObject {
     static throwCooldown = false;
-    static COOLDOWN_TIME = 800; // 800ms Wartezeit zwischen Würfen
-    
+    static COOLDOWN_TIME = 800;
+    static globalSplashSound = new Audio('audio/throwbrocke.ogg');
+
+    splashSound = ThrowableObject.globalSplashSound;
+
     constructor(x, y, direction, world) {
         super().loadImage('img/7_statusbars/3_icons/icon_salsa_bottle.png');
         this.x = x;
@@ -10,11 +13,10 @@ class ThrowableObject extends MovableObject {
         this.world = world;
         this.height = 60;
         this.width = 50;
-        this.speedX = 7 * this.direction;
+        this.speedX = 7 * direction;
         this.speedY = 20;
         this.groundY = 400;
         this.hasSplashed = false;
-        this.splashSound = new Audio('audio/throwbrocke.ogg');
         this.splashSound.volume = 0.3;
 
         this.IMAGES_SPLASH = [
@@ -44,14 +46,11 @@ class ThrowableObject extends MovableObject {
 
     static activateCooldown() {
         this.throwCooldown = true;
-        setTimeout(() => {
-            this.throwCooldown = false;
-        }, this.COOLDOWN_TIME);
+        setTimeout(() => this.throwCooldown = false, this.COOLDOWN_TIME);
     }
 
     throw() {
         if (ThrowableObject.throwCooldown) return;
-        
         this.applyGravity();
         this.movementInterval = setInterval(() => this.move(), 25);
         this.animateThrow();
@@ -75,29 +74,25 @@ class ThrowableObject extends MovableObject {
     }
 
     playSplashSound() {
-        try {
-            this.splashSound.currentTime = 0;
-            this.splashSound.play().catch(e => console.log("Sound error:", e));
-        } catch (e) {
-            console.warn("Sound failed:", e);
-        }
+        this.splashSound.currentTime = 0;
+        this.splashSound.play().catch(() => { });
     }
 
     animateThrow() {
-        let currentImageIndex = 0;
+        let index = 0;
         this.throwInterval = setInterval(() => {
-            this.img = this.imageCache[this.IMAGES_THROW[currentImageIndex]];
-            currentImageIndex = (currentImageIndex + 1) % this.IMAGES_THROW.length;
+            this.img = this.imageCache[this.IMAGES_THROW[index]];
+            index = (index + 1) % this.IMAGES_THROW.length;
         }, 100);
     }
 
     animateSplash() {
         clearInterval(this.throwInterval);
-        let currentImageIndex = 0;
+        let index = 0;
         this.splashInterval = setInterval(() => {
-            if (currentImageIndex < this.IMAGES_SPLASH.length) {
-                this.img = this.imageCache[this.IMAGES_SPLASH[currentImageIndex]];
-                currentImageIndex++;
+            if (index < this.IMAGES_SPLASH.length) {
+                this.img = this.imageCache[this.IMAGES_SPLASH[index]];
+                index++;
             } else {
                 clearInterval(this.splashInterval);
             }
@@ -112,7 +107,7 @@ class ThrowableObject extends MovableObject {
             } else {
                 clearInterval(this.gravityInterval);
             }
-        }, 1000 / 25);
+        }, 40);
     }
 
     removeFromWorld() {

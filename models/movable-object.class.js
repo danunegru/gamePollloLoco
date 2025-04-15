@@ -28,10 +28,24 @@ class MovableObject extends DrawableObject {
     }
 
     isColliding(mo) {
-        return this.x + this.width > mo.x &&
-            this.y + this.height > mo.y &&
-            this.x < mo.x &&
-            this.y < mo.y + mo.height;
+        // Kollision von oben (Sprung-Angriff) hat Priorität
+        if (this.isJumpingOn(mo)) {
+            return true;
+        }
+        
+        // Normale Kollisionsprüfung
+        return this.x + this.width - 25 > mo.x + 25 &&
+               this.y + this.height - 15 > mo.y + 10 &&
+               this.x + 25 < mo.x + mo.width - 25 &&
+               this.y + 10 < mo.y + mo.height - 5;
+    }
+    
+    isJumpingOn(mo) {
+        return this.y + this.height >= mo.y &&
+               this.y + this.height <= mo.y + mo.height / 2 &&
+               this.x + this.width - 30 > mo.x + 30 &&
+               this.x + 30 < mo.x + mo.width - 30 &&
+               this.speedY < 0; // Nur wenn fallend
     }
 
     playAnimation(images) {

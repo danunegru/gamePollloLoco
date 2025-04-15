@@ -8,6 +8,7 @@ class WinScreen {
         this.buttonWidth = 300;
         this.buttonHeight = 60;
         this.isHovering = false;
+        this.listenersBound = false;
     }
 
     display() {
@@ -27,10 +28,34 @@ class WinScreen {
             this.drawButton();
         };
 
-        this.canvas.addEventListener('mousemove', (event) => this.handleMouseMove(event));
-        this.canvas.addEventListener('click', (event) => this.handleClick(event));
-        this.canvas.addEventListener('touchstart', (event) => this.handleTouch(event));
-        this.canvas.addEventListener('touchmove', (event) => this.handleTouchMove(event));
+        this.bindListeners();
+    }
+
+    bindListeners() {
+        if (this.listenersBound) return;
+
+        this.handleMouseMoveBound = this.handleMouseMove.bind(this);
+        this.handleClickBound = this.handleClick.bind(this);
+        this.handleTouchBound = this.handleTouch.bind(this);
+        this.handleTouchMoveBound = this.handleTouchMove.bind(this);
+
+        this.canvas.addEventListener('mousemove', this.handleMouseMoveBound);
+        this.canvas.addEventListener('click', this.handleClickBound);
+        this.canvas.addEventListener('touchstart', this.handleTouchBound);
+        this.canvas.addEventListener('touchmove', this.handleTouchMoveBound);
+
+        this.listenersBound = true;
+    }
+
+    removeListeners() {
+        if (!this.listenersBound) return;
+
+        this.canvas.removeEventListener('mousemove', this.handleMouseMoveBound);
+        this.canvas.removeEventListener('click', this.handleClickBound);
+        this.canvas.removeEventListener('touchstart', this.handleTouchBound);
+        this.canvas.removeEventListener('touchmove', this.handleTouchMoveBound);
+
+        this.listenersBound = false;
     }
 
     drawButton() {
@@ -61,61 +86,50 @@ class WinScreen {
     }
 
     handleMouseMove(event) {
-        const rect = this.canvas.getBoundingClientRect();
-        const scaleX = this.canvas.width / rect.width;
-        const scaleY = this.canvas.height / rect.height;
-        const x = (event.clientX - rect.left) * scaleX;
-        const y = (event.clientY - rect.top) * scaleY;
-
+        const { x, y } = this.getScaledCoords(event.clientX, event.clientY);
         this.updateHoverState(x, y);
     }
 
     handleTouchMove(event) {
         event.preventDefault();
         const touch = event.touches[0];
-        const rect = this.canvas.getBoundingClientRect();
-        const scaleX = this.canvas.width / rect.width;
-        const scaleY = this.canvas.height / rect.height;
-        const x = (touch.clientX - rect.left) * scaleX;
-        const y = (touch.clientY - rect.top) * scaleY;
-
+        const { x, y } = this.getScaledCoords(touch.clientX, touch.clientY);
         this.updateHoverState(x, y);
     }
 
-    updateHoverState(x, y) {
-        const isHoveringNow =
-            x > this.buttonX &&
-            x < this.buttonX + this.buttonWidth &&
-            y > this.buttonY &&
-            y < this.buttonY + this.buttonHeight;
-
-        if (isHoveringNow !== this.isHovering) {
-            this.isHovering = isHoveringNow;
-            this.drawButton();
-        }
-
-        this.canvas.style.cursor = this.isHovering ? 'pointer' : 'default';
-    }
-
     handleClick(event) {
-        const rect = this.canvas.getBoundingClientRect();
-        const scaleX = this.canvas.width / rect.width;
-        const scaleY = this.canvas.height / rect.height;
-        const x = (event.clientX - rect.left) * scaleX;
-        const y = (event.clientY - rect.top) * scaleY;
-
+        const { x, y } = this.getScaledCoords(event.clientX, event.clientY);
         this.checkButtonClick(x, y);
     }
 
     handleTouch(event) {
         const touch = event.touches[0];
+        const { x, y } = this.getScaledCoords(touch.clientX, touch.clientY);
+        this.checkButtonClick(x, y);
+    }
+
+    getScaledCoords(clientX, clientY) {
         const rect = this.canvas.getBoundingClientRect();
         const scaleX = this.canvas.width / rect.width;
         const scaleY = this.canvas.height / rect.height;
-        const x = (touch.clientX - rect.left) * scaleX;
-        const y = (touch.clientY - rect.top) * scaleY;
+        const x = (clientX - rect.left) * scaleX;
+        const y = (clientY - rect.top) * scaleY;
+        return { x, y };
+    }
 
-        this.checkButtonClick(x, y);
+    updateHoverState(x, y) {
+        const hovering =
+            x > this.buttonX &&
+            x < this.buttonX + this.buttonWidth &&
+            y > this.buttonY &&
+            y < this.buttonY + this.buttonHeight;
+
+        if (hovering !== this.isHovering) {
+            this.isHovering = hovering;
+            this.drawButton();
+        }
+
+        this.canvas.style.cursor = hovering ? 'pointer' : 'default';
     }
 
     checkButtonClick(x, y) {
@@ -130,6 +144,21 @@ class WinScreen {
     }
 
     restartGame() {
-        location.reload();
+        this.removeListeners();
+
+        if (world?.backgroundSound) {
+            world.backgroundSound.pause();
+            world.backgroundSound.currentTime = 0;
+        }
+
+        if (world) {
+            world.stopGame();
+            world = null;
+        }
+
+        gameStarted = false;
+        document.getElementById('startScreen').style.display = 'none';
+        canvas.style.display = 'block';
+        startMainGame();
     }
 }
