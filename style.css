@@ -274,7 +274,6 @@ canvas {
 @media (max-width: 630px) and (orientation: portrait) {
     #orientationMessage {
         display: block;
-        /* Zeige die Nachricht im Hochformat an */
     }
 }
 

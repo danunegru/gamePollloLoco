@@ -347,9 +347,8 @@ class World {
             this.level.enemies.filter(enemy => !enemy.isDead)
         );
     
-        this.ctx.translate(-this.camera_x, 0); // Kamera zurücksetzen
+        this.ctx.translate(-this.camera_x, 0); 
     
-        // 👇 Jetzt ganz zum Schluss: Statusbars im Vordergrund
         this.addToMap(this.statusBar);
         this.addToMap(this.bottleBar);
         this.addToMap(this.endbossBar);
@@ -396,6 +395,5 @@ class World {
         if (this.backgroundSound) {
             this.backgroundSound.muted = !this.backgroundSound.muted;
         }
-        // Füge hier weitere Sounds hinzu wenn nötig
     }
 }

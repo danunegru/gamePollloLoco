@@ -28,12 +28,11 @@ class MovableObject extends DrawableObject {
     }
 
     isColliding(mo) {
-        // Kollision von oben (Sprung-Angriff) hat Priorität
         if (this.isJumpingOn(mo)) {
             return true;
         }
         
-        // Normale Kollisionsprüfung
+        
         return this.x + this.width - 25 > mo.x + 25 &&
                this.y + this.height - 15 > mo.y + 10 &&
                this.x + 25 < mo.x + mo.width - 25 &&

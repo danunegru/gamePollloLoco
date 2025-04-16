@@ -4,7 +4,8 @@ let keyboard = new Keyboard();
 let isTouchActive = false;
 let gameStarted = false;
 let backgroundSound;
-let isMuted = false;
+
+let isMuted = localStorage.getItem('muted') === 'true';
 
 function init() {
     canvas = document.getElementById('canvas');
@@ -19,7 +20,6 @@ function init() {
     });
 }
 
-
 function startMainGame() {
     if (!gameStarted) {
         gameStarted = true;
@@ -31,15 +31,13 @@ function startMainGame() {
         world.backgroundSound.muted = isMuted;
 
         world.backgroundSound.play().catch(e => console.log("Audio play error:", e));
+
         startChickens();
         setupControlEvents();
 
-        // ⬅️ WICHTIG: Alle Sounds stummschalten, falls isMuted aktiv ist
         setGlobalMute(isMuted);
     }
 }
-
-
 
 function startChickens() {
     if (world?.level?.enemies) {
@@ -66,6 +64,7 @@ function setupControlEvents() {
             resetTouchAfterDelay();
         });
     });
+
     window.addEventListener('keydown', (e) => {
         if (!isTouchActive) handleKeyboardPress(e, true);
     });
@@ -129,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById("overlay").addEventListener("click", function () {
         this.style.display = "none";
     });
+
     const checkOrientation = () => {
         const message = document.getElementById('orientationMessage');
         const showMessage = window.innerWidth < 630 &&
@@ -143,29 +143,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function initMuteButton() {
     const muteButton = document.getElementById('muteButton');
+    const muteButtonImg = document.getElementById('muteButtonImg');
+
+    muteButtonImg.src = isMuted ? "img/mute-button.png" : "img/muteButton.png";
+
+    setGlobalMute(isMuted);
+
     muteButton.addEventListener('click', toggleMute);
 }
 
 function toggleMute() {
     isMuted = !isMuted;
+    localStorage.setItem('muted', isMuted); 
+
     const muteButtonImg = document.getElementById('muteButtonImg');
     muteButtonImg.src = isMuted ? "img/mute-button.png" : "img/muteButton.png";
+
     setGlobalMute(isMuted);
 }
 
 function setGlobalMute(muted) {
-    // Hintergrundmusik
     if (world?.backgroundSound) {
         world.backgroundSound.muted = muted;
     }
 
-    // Charakter-Sounds
     if (world?.character) {
         world.character.walking_sound.muted = muted;
         world.character.jump_sound.muted = muted;
     }
 
-    // Endboss-Sounds
     if (world?.level?.enemies) {
         world.level.enemies.forEach(enemy => {
             if (enemy instanceof Endboss) {
@@ -175,17 +181,15 @@ function setGlobalMute(muted) {
         });
     }
 
-    // Flaschen-Sounds
+    if (ThrowableObject?.globalSplashSound) {
+        ThrowableObject.globalSplashSound.muted = muted;
+    }
+
     if (world?.throwableObjects?.length) {
         world.throwableObjects.forEach(obj => {
-            if (obj instanceof ThrowableObject) {
+            if (obj instanceof ThrowableObject && obj.splashSound) {
                 obj.splashSound.muted = muted;
             }
         });
     }
-       // ✅ Flaschenwurf-Sound muten
-       if (ThrowableObject?.globalSplashSound) {
-        ThrowableObject.globalSplashSound.muted = muted;
-    }
 }
-
