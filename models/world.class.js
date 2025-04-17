@@ -329,15 +329,22 @@ class World {
     }
 
     draw() {
+        this.clearAndTranslateCanvas();
+        this.drawLevelObjects();
+        this.drawUI();
+        this.drawButtons();
+        this.updateEventListeners();
+        this.animationFrame = requestAnimationFrame(() => this.draw());
+    }
+    
+    clearAndTranslateCanvas() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.translate(this.camera_x, 0);
+    }
     
+    drawLevelObjects() {
         this.addObjectsToMap(this.level.backgroundObjects);
-    
-        if (this.character) {
-            this.addToMap(this.character);
-        }
-    
+        if (this.character) this.addToMap(this.character);
         this.addObjectsToMap(this.level.clouds);
         this.addObjectsToMap(this.level.enemies);
         this.addObjectsToMap(this.throwableObjects);
@@ -346,23 +353,16 @@ class World {
         this.addObjectsToMap(
             this.level.enemies.filter(enemy => !enemy.isDead)
         );
+        this.ctx.translate(-this.camera_x, 0);
+    }
     
-        this.ctx.translate(-this.camera_x, 0); 
-    
+    drawUI() {
         this.addToMap(this.statusBar);
         this.addToMap(this.bottleBar);
         this.addToMap(this.endbossBar);
         this.addToMap(this.coinBar);
-    
-        this.drawButtons();
-        this.updateEventListeners();
-    
-        this.animationFrame = requestAnimationFrame(() => {
-            this.draw();
-        });
     }
     
-
     addObjectsToMap(objects) {
         objects.forEach(o => {
             this.addToMap(o);

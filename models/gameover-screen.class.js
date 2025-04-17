@@ -12,9 +12,17 @@ class GameOverScreen {
     }
 
     display() {
+        this.drawOverlay();
+        this.loadAndDrawImage();
+        this.bindListeners();
+    }
+
+    drawOverlay() {
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
 
+    loadAndDrawImage() {
         const image = new Image();
         image.src = this.imagePath;
 
@@ -23,12 +31,9 @@ class GameOverScreen {
             const imageHeight = this.canvas.height * 0.6;
             const imageX = (this.canvas.width - imageWidth) / 2;
             const imageY = (this.canvas.height - imageHeight) / 2;
-
             this.ctx.drawImage(image, imageX, imageY, imageWidth, imageHeight);
             this.drawButton();
         };
-
-        this.bindListeners();
     }
 
     bindListeners() {
@@ -59,25 +64,36 @@ class GameOverScreen {
     }
 
     drawButton() {
+        this.setupButtonStyles();
+        this.drawButtonShape();
+        this.drawButtonText();
+    }
+
+    setupButtonStyles() {
         this.ctx.fillStyle = this.isHovering ? 'rgba(200, 200, 200, 0.9)' : 'rgba(255, 255, 255, 0.9)';
         this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
         this.ctx.lineWidth = 2;
+    }
+
+    drawButtonShape() {
+        const bx = this.buttonX, by = this.buttonY, bw = this.buttonWidth, bh = this.buttonHeight;
 
         this.ctx.beginPath();
-        this.ctx.moveTo(this.buttonX + 10, this.buttonY);
-        this.ctx.lineTo(this.buttonX + this.buttonWidth - 10, this.buttonY);
-        this.ctx.quadraticCurveTo(this.buttonX + this.buttonWidth, this.buttonY, this.buttonX + this.buttonWidth, this.buttonY + 10);
-        this.ctx.lineTo(this.buttonX + this.buttonWidth, this.buttonY + this.buttonHeight - 10);
-        this.ctx.quadraticCurveTo(this.buttonX + this.buttonWidth, this.buttonY + this.buttonHeight, this.buttonX + this.buttonWidth - 10, this.buttonY + this.buttonHeight);
-        this.ctx.lineTo(this.buttonX + 10, this.buttonY + this.buttonHeight);
-        this.ctx.quadraticCurveTo(this.buttonX, this.buttonY + this.buttonHeight, this.buttonX, this.buttonY + this.buttonHeight - 10);
-        this.ctx.lineTo(this.buttonX, this.buttonY + 10);
-        this.ctx.quadraticCurveTo(this.buttonX, this.buttonY, this.buttonX + 10, this.buttonY);
+        this.ctx.moveTo(bx + 10, by);
+        this.ctx.lineTo(bx + bw - 10, by);
+        this.ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + 10);
+        this.ctx.lineTo(bx + bw, by + bh - 10);
+        this.ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - 10, by + bh);
+        this.ctx.lineTo(bx + 10, by + bh);
+        this.ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - 10);
+        this.ctx.lineTo(bx, by + 10);
+        this.ctx.quadraticCurveTo(bx, by, bx + 10, by);
         this.ctx.closePath();
-
         this.ctx.fill();
         this.ctx.stroke();
+    }
 
+    drawButtonText() {
         this.ctx.fillStyle = 'black';
         this.ctx.font = '22px "Permanent Marker"';
         this.ctx.textAlign = 'center';
@@ -118,47 +134,58 @@ class GameOverScreen {
     }
 
     updateHoverState(x, y) {
-        const hovering =
-            x > this.buttonX &&
-            x < this.buttonX + this.buttonWidth &&
-            y > this.buttonY &&
-            y < this.buttonY + this.buttonHeight;
-
+        const hovering = this.checkHover(x, y);
         if (hovering !== this.isHovering) {
             this.isHovering = hovering;
             this.drawButton();
         }
-
-        this.canvas.style.cursor = hovering ? 'pointer' : 'default';
+        this.updateCursor(hovering);
     }
 
-    checkButtonClick(x, y) {
-        if (
+    checkHover(x, y) {
+        return (
             x > this.buttonX &&
             x < this.buttonX + this.buttonWidth &&
             y > this.buttonY &&
             y < this.buttonY + this.buttonHeight
-        ) {
+        );
+    }
+
+    updateCursor(hovering) {
+        this.canvas.style.cursor = hovering ? 'pointer' : 'default';
+    }
+
+    checkButtonClick(x, y) {
+        if (this.checkHover(x, y)) {
             this.restartGame();
         }
     }
 
     restartGame() {
         this.removeListeners();
+        this.resetAudio();
+        this.resetWorld();
+        this.restartUI();
+        startMainGame();
+    }
 
+    resetAudio() {
         if (world?.backgroundSound) {
             world.backgroundSound.pause();
             world.backgroundSound.currentTime = 0;
         }
+    }
 
+    resetWorld() {
         if (world) {
             world.stopGame();
             world = null;
         }
-
         gameStarted = false;
+    }
+
+    restartUI() {
         document.getElementById('startScreen').style.display = 'none';
         canvas.style.display = 'block';
-        startMainGame();
     }
 }
