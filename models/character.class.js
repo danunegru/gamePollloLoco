@@ -8,9 +8,14 @@ class Character extends MovableObject {
     collectedBottles = 0;
     maxBottles = 4;
     height = 280;
-    y = 100;
+    groundY = 140;
+    y = 140;
     speed = 5;
     justBounced = false;
+    currentImage = 0;
+    isDeadState = false;
+    idleTimer = 0;
+    world;
 
     IMAGES_WALKING = [
         'img/2_character_pepe/2_walk/W-21.png',
@@ -75,11 +80,6 @@ class Character extends MovableObject {
         'img/2_character_pepe/1_idle/long_idle/I-20.png',
     ];
 
-    currentImage = 0;
-    isDeadState = false;
-    idleTimer = 0;
-    world;
-
     constructor() {
         super().loadImage('img/2_character_pepe/2_walk/W-21.png');
         this.loadCharacterImages();
@@ -95,18 +95,6 @@ class Character extends MovableObject {
         this.loadImages(this.IMAGES_HURT);
         this.loadImages(this.STAY_NORMAL);
         this.loadImages(this.STAY_LONG);
-    }
-
-    canCollectBottle() {
-        return this.collectedBottles < this.maxBottles;
-    }
-
-    addBottle() {
-        if (this.canCollectBottle()) {
-            this.collectedBottles++;
-            return true;
-        }
-        return false;
     }
 
     animate() {
@@ -224,4 +212,20 @@ class Character extends MovableObject {
             this.jump_sound.play().catch(() => {});
         }
     }
+
+    isAboveGround() {
+        return this.y < this.groundY;
+    }
+    canCollectBottle() {
+        return this.collectedBottles < this.maxBottles;
+    }
+    
+    addBottle() {
+        if (this.canCollectBottle()) {
+            this.collectedBottles++;
+            return true;
+        }
+        return false;
+    }
+    
 }

@@ -3,11 +3,21 @@ class GameOverScreen {
         this.canvas = canvas;
         this.ctx = ctx;
         this.imagePath = imagePath;
-        this.buttonX = canvas.width / 2 - 150;
-        this.buttonY = canvas.height - 100;
+
         this.buttonWidth = 300;
         this.buttonHeight = 60;
+        this.menuButtonWidth = 160;
+        this.menuButtonHeight = 60;
+        const buttonSpacing = 20;
+        const totalWidth = this.buttonWidth + buttonSpacing + this.menuButtonWidth;
+
+        this.buttonX = (canvas.width - totalWidth) / 2;
+        this.buttonY = canvas.height - 100;
+        this.menuButtonX = this.buttonX + this.buttonWidth + buttonSpacing;
+        this.menuButtonY = this.buttonY;
+
         this.isHovering = false;
+        this.menuIsHovering = false;
         this.listenersBound = false;
     }
 
@@ -25,7 +35,6 @@ class GameOverScreen {
     loadAndDrawImage() {
         const image = new Image();
         image.src = this.imagePath;
-
         image.onload = () => {
             const imageWidth = this.canvas.width * 0.8;
             const imageHeight = this.canvas.height * 0.6;
@@ -33,6 +42,7 @@ class GameOverScreen {
             const imageY = (this.canvas.height - imageHeight) / 2;
             this.ctx.drawImage(image, imageX, imageY, imageWidth, imageHeight);
             this.drawButton();
+            this.drawMenuButton();
         };
     }
 
@@ -64,41 +74,45 @@ class GameOverScreen {
     }
 
     drawButton() {
-        this.setupButtonStyles();
-        this.drawButtonShape();
-        this.drawButtonText();
-    }
-
-    setupButtonStyles() {
         this.ctx.fillStyle = this.isHovering ? 'rgba(200, 200, 200, 0.9)' : 'rgba(255, 255, 255, 0.9)';
         this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
         this.ctx.lineWidth = 2;
-    }
 
-    drawButtonShape() {
-        const bx = this.buttonX, by = this.buttonY, bw = this.buttonWidth, bh = this.buttonHeight;
-
-        this.ctx.beginPath();
-        this.ctx.moveTo(bx + 10, by);
-        this.ctx.lineTo(bx + bw - 10, by);
-        this.ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + 10);
-        this.ctx.lineTo(bx + bw, by + bh - 10);
-        this.ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - 10, by + bh);
-        this.ctx.lineTo(bx + 10, by + bh);
-        this.ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - 10);
-        this.ctx.lineTo(bx, by + 10);
-        this.ctx.quadraticCurveTo(bx, by, bx + 10, by);
-        this.ctx.closePath();
-        this.ctx.fill();
-        this.ctx.stroke();
-    }
-
-    drawButtonText() {
+        this.drawRoundedRect(this.buttonX, this.buttonY, this.buttonWidth, this.buttonHeight);
         this.ctx.fillStyle = 'black';
         this.ctx.font = '22px "Permanent Marker"';
         this.ctx.textAlign = 'center';
         this.ctx.textBaseline = 'middle';
-        this.ctx.fillText('Noch einmal spielen!', this.canvas.width / 2, this.buttonY + this.buttonHeight / 2);
+        this.ctx.fillText('Noch einmal spielen!', this.buttonX + this.buttonWidth / 2, this.buttonY + this.buttonHeight / 2);
+    }
+
+    drawMenuButton() {
+        this.ctx.fillStyle = this.menuIsHovering ? 'rgba(200, 200, 200, 0.9)' : 'rgba(255, 255, 255, 0.9)';
+        this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
+        this.ctx.lineWidth = 2;
+
+        this.drawRoundedRect(this.menuButtonX, this.menuButtonY, this.menuButtonWidth, this.menuButtonHeight);
+        this.ctx.fillStyle = 'black';
+        this.ctx.font = '22px "Permanent Marker"';
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        this.ctx.fillText('Menu', this.menuButtonX + this.menuButtonWidth / 2, this.menuButtonY + this.menuButtonHeight / 2);
+    }
+
+    drawRoundedRect(x, y, width, height) {
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + 10, y);
+        this.ctx.lineTo(x + width - 10, y);
+        this.ctx.quadraticCurveTo(x + width, y, x + width, y + 10);
+        this.ctx.lineTo(x + width, y + height - 10);
+        this.ctx.quadraticCurveTo(x + width, y + height, x + width - 10, y + height);
+        this.ctx.lineTo(x + 10, y + height);
+        this.ctx.quadraticCurveTo(x, y + height, x, y + height - 10);
+        this.ctx.lineTo(x, y + 10);
+        this.ctx.quadraticCurveTo(x, y, x + 10, y);
+        this.ctx.closePath();
+        this.ctx.fill();
+        this.ctx.stroke();
     }
 
     handleMouseMove(event) {
@@ -116,12 +130,14 @@ class GameOverScreen {
     handleClick(event) {
         const { x, y } = this.getScaledCoords(event.clientX, event.clientY);
         this.checkButtonClick(x, y);
+        this.checkMenuButtonClick(x, y);
     }
 
     handleTouch(event) {
         const touch = event.touches[0];
         const { x, y } = this.getScaledCoords(touch.clientX, touch.clientY);
         this.checkButtonClick(x, y);
+        this.checkMenuButtonClick(x, y);
     }
 
     getScaledCoords(clientX, clientY) {
@@ -134,12 +150,17 @@ class GameOverScreen {
     }
 
     updateHoverState(x, y) {
-        const hovering = this.checkHover(x, y);
-        if (hovering !== this.isHovering) {
-            this.isHovering = hovering;
+        const hoveringMain = this.checkHover(x, y);
+        const hoveringMenu = this.checkHoverMenuButton(x, y);
+
+        if (hoveringMain !== this.isHovering || hoveringMenu !== this.menuIsHovering) {
+            this.isHovering = hoveringMain;
+            this.menuIsHovering = hoveringMenu;
             this.drawButton();
+            this.drawMenuButton();
         }
-        this.updateCursor(hovering);
+
+        this.updateCursor(hoveringMain || hoveringMenu);
     }
 
     checkHover(x, y) {
@@ -148,6 +169,15 @@ class GameOverScreen {
             x < this.buttonX + this.buttonWidth &&
             y > this.buttonY &&
             y < this.buttonY + this.buttonHeight
+        );
+    }
+
+    checkHoverMenuButton(x, y) {
+        return (
+            x > this.menuButtonX &&
+            x < this.menuButtonX + this.menuButtonWidth &&
+            y > this.menuButtonY &&
+            y < this.menuButtonY + this.menuButtonHeight
         );
     }
 
@@ -161,12 +191,26 @@ class GameOverScreen {
         }
     }
 
+    checkMenuButtonClick(x, y) {
+        if (this.checkHoverMenuButton(x, y)) {
+            this.goToMenu();
+        }
+    }
+
     restartGame() {
         this.removeListeners();
         this.resetAudio();
         this.resetWorld();
         this.restartUI();
         startMainGame();
+    }
+
+    goToMenu() {
+        this.removeListeners();
+        this.resetAudio();
+        this.resetWorld();
+        document.getElementById('startScreen').style.display = 'block';
+        this.canvas.style.display = 'none';
     }
 
     resetAudio() {
@@ -186,6 +230,6 @@ class GameOverScreen {
 
     restartUI() {
         document.getElementById('startScreen').style.display = 'none';
-        canvas.style.display = 'block';
+        this.canvas.style.display = 'block';
     }
 }

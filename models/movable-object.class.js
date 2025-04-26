@@ -14,6 +14,7 @@ class MovableObject extends DrawableObject {
                 this.y -= this.speedY;
                 this.speedY -= this.acceleration;
             } else {
+                this.y = this.groundY;
                 this.speedY = 0;
             }
         }, 1000 / 25);
@@ -23,7 +24,7 @@ class MovableObject extends DrawableObject {
         if (this instanceof ThrowableObject) {
             return true;
         } else {
-            return this.y < 138;
+            return this.y < this.groundY;
         }
     }
 
@@ -31,20 +32,18 @@ class MovableObject extends DrawableObject {
         if (this.isJumpingOn(mo)) {
             return true;
         }
-        
-        
         return this.x + this.width - 25 > mo.x + 25 &&
                this.y + this.height - 15 > mo.y + 10 &&
                this.x + 25 < mo.x + mo.width - 25 &&
                this.y + 10 < mo.y + mo.height - 5;
     }
-    
+
     isJumpingOn(mo) {
         return this.y + this.height >= mo.y &&
                this.y + this.height <= mo.y + mo.height / 2 &&
                this.x + this.width - 30 > mo.x + 30 &&
                this.x + 30 < mo.x + mo.width - 30 &&
-               this.speedY < 0; // Nur wenn fallend
+               this.speedY < 0;
     }
 
     playAnimation(images) {
