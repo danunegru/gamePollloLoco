@@ -1,20 +1,41 @@
+/**
+ * Class representing a normal-sized enemy chicken.
+ * Inherits from MovableObject.
+ */
 class Chicken extends MovableObject {
+    /** Y position of the chicken. */
     y = 340;
+
+    /** Height of the chicken. */
     height = 80;
+
+    /** Width of the chicken. */
     width = 100;
-    isDead = false; isMoving = false; walking_sound = new Audio('audio/chicken.mp3');
 
+    /** Indicates if the chicken is dead. */
+    isDead = false;
 
+    /** Indicates if the chicken is currently moving. */
+    isMoving = false;
+
+    /** Sound effect for chicken movement. */
+    walking_sound = new Audio('audio/chicken.mp3');
+
+    /** Array of images used for walking animation. */
     IMAGES_WALKING = [
         'img/3_enemies_chicken/chicken_normal/1_walk/1_w.png',
         'img/3_enemies_chicken/chicken_normal/1_walk/2_w.png',
         'img/3_enemies_chicken/chicken_normal/1_walk/3_w.png'
     ];
 
+    /** Image used when the chicken is dead. */
     IMAGES_DEAD = [
         'img/3_enemies_chicken/chicken_normal/2_dead/dead.png'
     ];
 
+    /**
+     * Creates a new Chicken instance with randomized position and speed.
+     */
     constructor() {
         super().loadImage(this.IMAGES_WALKING[0]);
         this.loadImages(this.IMAGES_WALKING);
@@ -23,6 +44,9 @@ class Chicken extends MovableObject {
         this.speed = 0.15 + Math.random() * 0.75;
     }
 
+    /**
+     * Starts the chicken's movement and walking animation.
+     */
     startMoving() {
         if (!this.isMoving) {
             this.isMoving = true;
@@ -30,7 +54,9 @@ class Chicken extends MovableObject {
         }
     }
 
-
+    /**
+     * Starts the animation intervals for movement and sprite changes.
+     */
     animate() {
         this.movementInterval = setInterval(() => {
             if (this.isDead === false && this.isMoving) {
@@ -45,7 +71,9 @@ class Chicken extends MovableObject {
         }, 200);
     }
 
-
+    /**
+     * Plays the death animation and stops the chicken's movement.
+     */
     playDeathAnimation() {
         this.isDead = true;
         this.speed = 0;
@@ -57,6 +85,9 @@ class Chicken extends MovableObject {
         }, 2000);
     }
 
+    /**
+     * Marks the chicken for removal from the game world.
+     */
     markForRemoval() {
         this.isMarkedForRemoval = true;
     }

@@ -1,4 +1,13 @@
+/**
+ * Class representing the game over screen with restart and menu buttons.
+ */
 class GameOverScreen {
+    /**
+     * Creates a game over screen instance.
+     * @param {HTMLCanvasElement} canvas - The canvas element.
+     * @param {CanvasRenderingContext2D} ctx - The 2D rendering context.
+     * @param {string} imagePath - Path to the game over background image.
+     */
     constructor(canvas, ctx, imagePath) {
         this.canvas = canvas;
         this.ctx = ctx;
@@ -21,17 +30,26 @@ class GameOverScreen {
         this.listenersBound = false;
     }
 
+    /**
+     * Displays the screen, draws overlay, image and buttons, and binds listeners.
+     */
     display() {
         this.drawOverlay();
         this.loadAndDrawImage();
         this.bindListeners();
     }
 
+    /**
+     * Draws a semi-transparent overlay over the canvas.
+     */
     drawOverlay() {
         this.ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     }
 
+    /**
+     * Loads the game over image and draws it along with buttons once loaded.
+     */
     loadAndDrawImage() {
         const image = new Image();
         image.src = this.imagePath;
@@ -46,6 +64,9 @@ class GameOverScreen {
         };
     }
 
+    /**
+     * Binds event listeners for mouse and touch interactions.
+     */
     bindListeners() {
         if (this.listenersBound) return;
 
@@ -62,6 +83,9 @@ class GameOverScreen {
         this.listenersBound = true;
     }
 
+    /**
+     * Removes all event listeners.
+     */
     removeListeners() {
         if (!this.listenersBound) return;
 
@@ -73,6 +97,9 @@ class GameOverScreen {
         this.listenersBound = false;
     }
 
+    /**
+     * Draws the "Play Again" button.
+     */
     drawButton() {
         this.ctx.fillStyle = this.isHovering ? 'rgba(200, 200, 200, 0.9)' : 'rgba(255, 255, 255, 0.9)';
         this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
@@ -86,6 +113,9 @@ class GameOverScreen {
         this.ctx.fillText('Noch einmal spielen!', this.buttonX + this.buttonWidth / 2, this.buttonY + this.buttonHeight / 2);
     }
 
+    /**
+     * Draws the "Menu" button.
+     */
     drawMenuButton() {
         this.ctx.fillStyle = this.menuIsHovering ? 'rgba(200, 200, 200, 0.9)' : 'rgba(255, 255, 255, 0.9)';
         this.ctx.strokeStyle = 'rgba(0, 0, 0, 0.6)';
@@ -99,6 +129,13 @@ class GameOverScreen {
         this.ctx.fillText('Menu', this.menuButtonX + this.menuButtonWidth / 2, this.menuButtonY + this.menuButtonHeight / 2);
     }
 
+    /**
+     * Draws a rounded rectangle on the canvas.
+     * @param {number} x - X position.
+     * @param {number} y - Y position.
+     * @param {number} width - Rectangle width.
+     * @param {number} height - Rectangle height.
+     */
     drawRoundedRect(x, y, width, height) {
         this.ctx.beginPath();
         this.ctx.moveTo(x + 10, y);
@@ -115,11 +152,19 @@ class GameOverScreen {
         this.ctx.stroke();
     }
 
+    /**
+     * Handles mouse move events to update hover state.
+     * @param {MouseEvent} event - Mouse move event.
+     */
     handleMouseMove(event) {
         const { x, y } = this.getScaledCoords(event.clientX, event.clientY);
         this.updateHoverState(x, y);
     }
 
+    /**
+     * Handles touch move events to update hover state.
+     * @param {TouchEvent} event - Touch move event.
+     */
     handleTouchMove(event) {
         event.preventDefault();
         const touch = event.touches[0];
@@ -127,12 +172,20 @@ class GameOverScreen {
         this.updateHoverState(x, y);
     }
 
+    /**
+     * Handles click events to check button actions.
+     * @param {MouseEvent} event - Click event.
+     */
     handleClick(event) {
         const { x, y } = this.getScaledCoords(event.clientX, event.clientY);
         this.checkButtonClick(x, y);
         this.checkMenuButtonClick(x, y);
     }
 
+    /**
+     * Handles touch start events to check button actions.
+     * @param {TouchEvent} event - Touch start event.
+     */
     handleTouch(event) {
         const touch = event.touches[0];
         const { x, y } = this.getScaledCoords(touch.clientX, touch.clientY);
@@ -140,6 +193,12 @@ class GameOverScreen {
         this.checkMenuButtonClick(x, y);
     }
 
+    /**
+     * Converts client coordinates to canvas coordinates.
+     * @param {number} clientX - X coordinate.
+     * @param {number} clientY - Y coordinate.
+     * @returns {{x: number, y: number}} Scaled canvas coordinates.
+     */
     getScaledCoords(clientX, clientY) {
         const rect = this.canvas.getBoundingClientRect();
         const scaleX = this.canvas.width / rect.width;
@@ -149,6 +208,11 @@ class GameOverScreen {
         return { x, y };
     }
 
+    /**
+     * Updates the hover state and redraws buttons if needed.
+     * @param {number} x - X position.
+     * @param {number} y - Y position.
+     */
     updateHoverState(x, y) {
         const hoveringMain = this.checkHover(x, y);
         const hoveringMenu = this.checkHoverMenuButton(x, y);
@@ -163,6 +227,12 @@ class GameOverScreen {
         this.updateCursor(hoveringMain || hoveringMenu);
     }
 
+    /**
+     * Checks if the "Play Again" button is being hovered.
+     * @param {number} x - X position.
+     * @param {number} y - Y position.
+     * @returns {boolean} True if hovering.
+     */
     checkHover(x, y) {
         return (
             x > this.buttonX &&
@@ -172,6 +242,12 @@ class GameOverScreen {
         );
     }
 
+    /**
+     * Checks if the "Menu" button is being hovered.
+     * @param {number} x - X position.
+     * @param {number} y - Y position.
+     * @returns {boolean} True if hovering.
+     */
     checkHoverMenuButton(x, y) {
         return (
             x > this.menuButtonX &&
@@ -181,22 +257,39 @@ class GameOverScreen {
         );
     }
 
+    /**
+     * Updates the cursor style depending on hover state.
+     * @param {boolean} hovering - True if any button is being hovered.
+     */
     updateCursor(hovering) {
         this.canvas.style.cursor = hovering ? 'pointer' : 'default';
     }
 
+    /**
+     * Checks if the "Play Again" button was clicked and restarts game.
+     * @param {number} x - X position.
+     * @param {number} y - Y position.
+     */
     checkButtonClick(x, y) {
         if (this.checkHover(x, y)) {
             this.restartGame();
         }
     }
 
+    /**
+     * Checks if the "Menu" button was clicked and returns to menu.
+     * @param {number} x - X position.
+     * @param {number} y - Y position.
+     */
     checkMenuButtonClick(x, y) {
         if (this.checkHoverMenuButton(x, y)) {
             this.goToMenu();
         }
     }
 
+    /**
+     * Restarts the game and UI.
+     */
     restartGame() {
         this.removeListeners();
         this.resetAudio();
@@ -205,6 +298,9 @@ class GameOverScreen {
         startMainGame();
     }
 
+    /**
+     * Returns to the main menu.
+     */
     goToMenu() {
         this.removeListeners();
         this.resetAudio();
@@ -213,6 +309,9 @@ class GameOverScreen {
         this.canvas.style.display = 'none';
     }
 
+    /**
+     * Resets background audio if available.
+     */
     resetAudio() {
         if (world?.backgroundSound) {
             world.backgroundSound.pause();
@@ -220,6 +319,9 @@ class GameOverScreen {
         }
     }
 
+    /**
+     * Stops the game world and clears state.
+     */
     resetWorld() {
         if (world) {
             world.stopGame();
@@ -228,6 +330,9 @@ class GameOverScreen {
         gameStarted = false;
     }
 
+    /**
+     * Restores the UI to the initial state.
+     */
     restartUI() {
         document.getElementById('startScreen').style.display = 'none';
         this.canvas.style.display = 'block';

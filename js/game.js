@@ -1,11 +1,15 @@
 let canvas;
 let world;
 let keyboard = new Keyboard();
+
 let isTouchActive = false;
 let gameStarted = false;
 let backgroundSound;
 let isMuted = localStorage.getItem('muted') === 'true';
 
+/**
+ * Initializes game UI and sets up the start button.
+ */
 function init() {
     canvas = document.getElementById('canvas');
     const startScreen = document.getElementById('startScreen');
@@ -14,12 +18,18 @@ function init() {
     startButton.addEventListener('click', startGameHandler);
 }
 
+/**
+ * Hides the start screen and begins the main game.
+ */
 function startGameHandler() {
     document.getElementById('startScreen').style.display = 'none';
     canvas.style.display = 'block';
     startMainGame();
 }
 
+/**
+ * Initializes the game world and starts game logic.
+ */
 function startMainGame() {
     if (gameStarted) return;
 
@@ -31,6 +41,9 @@ function startMainGame() {
     setGlobalMute(isMuted);
 }
 
+/**
+ * Loads and plays background music in a loop.
+ */
 function initBackgroundSound() {
     world.backgroundSound = new Audio('audio/backgroundsound.wav');
     world.backgroundSound.loop = true;
@@ -39,6 +52,9 @@ function initBackgroundSound() {
     world.backgroundSound.play().catch(e => console.log("Audio play error:", e));
 }
 
+/**
+ * Starts all chicken movement animations.
+ */
 function startChickens() {
     if (!world?.level?.enemies) return;
 
@@ -50,11 +66,17 @@ function startChickens() {
     });
 }
 
+/**
+ * Sets up all game control input events.
+ */
 function setupControlEvents() {
     setupTouchEvents();
     setupKeyboardEvents();
 }
 
+/**
+ * Binds touch and mouse input events.
+ */
 function setupTouchEvents() {
     ['mousedown', 'touchstart'].forEach(evt => {
         canvas.addEventListener(evt, e => {
@@ -71,6 +93,9 @@ function setupTouchEvents() {
     });
 }
 
+/**
+ * Binds keyboard input events for gameplay.
+ */
 function setupKeyboardEvents() {
     window.addEventListener('keydown', e => {
         if (!isTouchActive) handleKeyboardPress(e, true);
@@ -81,10 +106,18 @@ function setupKeyboardEvents() {
     });
 }
 
+/**
+ * Delays resetting of touch state to prevent false input handling.
+ */
 function resetTouchAfterDelay() {
     setTimeout(() => isTouchActive = false, 500);
 }
 
+/**
+ * Calculates scaled coordinates from touch/mouse event.
+ * @param {Event} event - Touch or mouse event.
+ * @returns {{x: number|null, y: number|null}}
+ */
 function getTouchPosition(event) {
     const rect = canvas.getBoundingClientRect();
     let { x, y } = getRawTouchCoordinates(event, rect);
@@ -94,10 +127,15 @@ function getTouchPosition(event) {
         y = (y / rect.height) * canvas.height;
         return { x, y };
     }
-
     return { x: null, y: null };
 }
 
+/**
+ * Returns raw x/y from touch, mouse, or pointer events.
+ * @param {Event} event
+ * @param {DOMRect} rect
+ * @returns {{x: number, y: number}}
+ */
 function getRawTouchCoordinates(event, rect) {
     if (event.touches?.[0]) {
         return {
@@ -118,6 +156,11 @@ function getRawTouchCoordinates(event, rect) {
     return {};
 }
 
+/**
+ * Handles key press state for game controls.
+ * @param {KeyboardEvent} e
+ * @param {boolean} isPressed
+ */
 function handleKeyboardPress(e, isPressed) {
     switch (e.key) {
         case 'ArrowRight': keyboard.RIGHT = isPressed; break;
@@ -129,6 +172,9 @@ function handleKeyboardPress(e, isPressed) {
     }
 }
 
+/**
+ * Toggles fullscreen mode for the canvas.
+ */
 function toggleFullscreen() {
     if (!document.fullscreenElement) {
         canvas.requestFullscreen?.() || canvas.webkitRequestFullscreen?.();
@@ -137,11 +183,16 @@ function toggleFullscreen() {
     }
 }
 
+// Set up overlay and orientation after DOM is ready
+
 document.addEventListener('DOMContentLoaded', () => {
     setupInfoOverlay();
     setupOrientationListener();
 });
 
+/**
+ * Shows/hides info overlay on user interaction.
+ */
 function setupInfoOverlay() {
     document.getElementById("infoButton").addEventListener("click", () => {
         document.getElementById("overlay").style.display = "block";
@@ -152,6 +203,9 @@ function setupInfoOverlay() {
     });
 }
 
+/**
+ * Adjusts UI when device orientation changes.
+ */
 function setupOrientationListener() {
     const checkOrientation = () => {
         const message = document.getElementById('orientationMessage');
@@ -165,6 +219,9 @@ function setupOrientationListener() {
     window.addEventListener('orientationchange', checkOrientation);
 }
 
+/**
+ * Initializes mute button with saved settings.
+ */
 function initMuteButton() {
     const muteButton = document.getElementById('muteButton');
     const muteButtonImg = document.getElementById('muteButtonImg');
@@ -174,6 +231,9 @@ function initMuteButton() {
     muteButton.addEventListener('click', toggleMute);
 }
 
+/**
+ * Toggles mute and updates global state + icon.
+ */
 function toggleMute() {
     isMuted = !isMuted;
     localStorage.setItem('muted', isMuted);
@@ -184,6 +244,10 @@ function toggleMute() {
     setGlobalMute(isMuted);
 }
 
+/**
+ * Mutes/unmutes all game sounds.
+ * @param {boolean} muted
+ */
 function setGlobalMute(muted) {
     muteWorldSounds(muted);
     muteCharacterSounds(muted);

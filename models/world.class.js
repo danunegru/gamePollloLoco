@@ -1,32 +1,46 @@
+/**
+ * Die zentrale Klasse, die das gesamte Spielgeschehen steuert.
+ * Verwaltet Spielfigur, Gegner, Umgebung, UI und Interaktionen.
+ */
 class World {
-    character = new Character();
-    level = createLevel1();
 
-    canvas;
-    ctx;
-    keyboard;
-    camera_x = 0;
-    statusBar = new StatusBar();
-    bottleBar = new BottleBar();
-    endbossBar = new EndbossBar();
-    coinBar = new CoinBar();
-    throwableObjects = [];
-    runInterval;
-    animationFrame;
-
+    /**
+     * Konstruktor: Initialisiert Spielfeld, UI, Gegner und alle Spielobjekte.
+     * @param {HTMLCanvasElement} canvas - Zeichenfläche für das Spiel.
+     * @param {Keyboard} keyboard - Objekt zur Verwaltung der Tasteneingaben.
+     */
     constructor(canvas, keyboard) {
-        this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
         this.keyboard = keyboard;
-        this.coins = this.generateCoins();
-        this.bottle = this.generateBottle();
+        this.helper = new GameHelper();
+
+        this.character = new Character();
+        this.level = createLevel1();
+
+        this.statusBar = new StatusBar();
+        this.bottleBar = new BottleBar();
+        this.endbossBar = new EndbossBar();
+        this.coinBar = new CoinBar();
+
+        this.coins = this.helper.generateCoins();
+        this.bottle = this.helper.generateBottles();
+        this.buttonPositions = this.helper.updateButtonPositions(this.canvas);
+        this.throwableObjects = [];
+
+        this.camera_x = 0;
+        this.runInterval;
+        this.animationFrame;
+
         this.draw();
         this.setWorld();
         this.run();
-
         this.updateEventListeners();
     }
 
+    /**
+     * Fügt der Canvas Touch- und Maus-Events für mobile Buttons hinzu.
+     */
     updateEventListeners() {
         this.canvas.removeEventListener('mousedown', this.handleCanvasPress);
         this.canvas.removeEventListener('mouseup', this.handleCanvasPress);
@@ -41,6 +55,9 @@ class World {
         }
     }
 
+    /**
+     * Verknüpft die Spielfigur und Endgegner mit der World-Instanz.
+     */
     setWorld() {
         this.character.world = this;
         this.level.enemies.forEach(enemy => {
@@ -50,27 +67,19 @@ class World {
         });
     }
 
-    buttonPositions = {
-        left: { x: 50, y: 400, width: 60, height: 60 },
-        up: { x: 150, y: 400, width: 60, height: 60 },
-        right: { x: 250, y: 400, width: 60, height: 60 },
-        throw: { x: 350, y: 400, width: 60, height: 60 },
-    };
-
+    /**
+     * Verarbeitet Klicks auf Touch-Buttons für die mobile Steuerung.
+     * @param {Event} event - Eingabeereignis (Touch/Maus)
+     * @param {boolean} isPressed - Gibt an, ob gedrückt oder losgelassen wurde.
+     */
     handleCanvasPress(event, isPressed) {
         event.preventDefault();
-
         const { x, y } = getTouchPosition(event);
-
-        if (x === null || y === null) {
-            console.error("Touch-Koordinaten ungültig:", event);
-            return;
-        }
+        if (x === null || y === null) return;
 
         let buttonPressed = false;
-
         for (const key in this.buttonPositions) {
-            if (this.isInsideButton(x, y, this.buttonPositions[key])) {
+            if (this.helper.isInsideButton(x, y, this.buttonPositions[key])) {
                 if (key === "left") this.keyboard.LEFT = isPressed;
                 if (key === "up") {
                     this.keyboard.UP = isPressed;
@@ -81,82 +90,31 @@ class World {
                 buttonPressed = true;
             }
         }
-
         if (!buttonPressed || !isPressed) {
-            this.resetKeyboard();
+            this.helper.resetKeyboard(this.keyboard);
         }
     }
 
-    updateButtonPositions() {
-        const scaleFactor = this.canvas.width / 800; // Basisgröße ist 800px
-        this.buttonPositions = {
-            left: { x: 50 * scaleFactor, y: 400 * scaleFactor, width: 60 * scaleFactor, height: 60 * scaleFactor },
-            up: { x: 150 * scaleFactor, y: 400 * scaleFactor, width: 60 * scaleFactor, height: 60 * scaleFactor },
-            right: { x: 250 * scaleFactor, y: 400 * scaleFactor, width: 60 * scaleFactor, height: 60 * scaleFactor },
-            throw: { x: 350 * scaleFactor, y: 400 * scaleFactor, width: 60 * scaleFactor, height: 60 * scaleFactor },
-        };
-    }
-
-    isInsideButton(x, y, button) {
-        return x > button.x && x < button.x + button.width && y > button.y && y < button.y + button.height;
-    }
-
-    resetKeyboard() {
-        this.keyboard.LEFT = false;
-        this.keyboard.RIGHT = false;
-        this.keyboard.UP = false;
-        this.keyboard.SPACE = false;
-        this.keyboard.D = false;
-    }
-
-
-    drawButtons() {
-        if (window.innerWidth < 630 || window.innerHeight < 600) {
-            this.ctx.lineWidth = 2;
-
-            for (const key in this.buttonPositions) {
-                let btn = this.buttonPositions[key];
-
-                this.ctx.beginPath();
-                this.ctx.arc(
-                    btn.x + btn.width / 2,
-                    btn.y + btn.height / 2,
-                    btn.width / 2,
-                    0,
-                    2 * Math.PI
-                );
-                this.ctx.fillStyle = '#e0a800';
-                this.ctx.fill();
-                this.ctx.strokeStyle = '#b8860b';
-                this.ctx.stroke();
-
-
-                this.ctx.fillStyle = '#000';
-                this.ctx.font = '20px Arial';
-                this.ctx.textAlign = 'center';
-                this.ctx.textBaseline = 'middle';
-
-                let symbol = key === "left" ? "⬅️" :
-                    key === "up" ? "⬆️" :
-                        key === "right" ? "➡️" :
-                            key === "throw" ? "🔄" : "";
-
-                this.ctx.fillText(symbol, btn.x + btn.width / 2, btn.y + btn.height / 2);
-            }
-        }
-    }
-
+    /**
+     * Aktualisiert die Münz-Anzeige basierend auf verbliebenen Coins.
+     */
     updateCoinBar() {
         const collectedCoins = 10 - this.coins.length;
         const percentage = (collectedCoins / 10) * 100;
         this.coinBar.setPercentage(percentage);
     }
 
+    /**
+     * Aktualisiert die Flaschenanzeige (Wurfanzahl).
+     */
     updateBottleBar() {
         const percentage = (this.character.collectedBottles / this.character.maxBottles) * 100;
         this.bottleBar.setPercentage(percentage);
     }
 
+    /**
+     * Haupt-Game-Loop, prüft regelmäßig Spielstatus und Kollisionen.
+     */
     run() {
         if (this.runInterval) return;
         this.runInterval = setInterval(() => {
@@ -171,11 +129,17 @@ class World {
         }, 200);
     }
 
+    /**
+     * Stoppt Spielablauf und Zeichenfunktion.
+     */
     stopGame() {
         clearInterval(this.runInterval);
         cancelAnimationFrame(this.animationFrame);
     }
 
+    /**
+     * Prüft ob eine Flasche geworfen werden darf und erstellt sie.
+     */
     checkThrowObjects() {
         if (this.keyboard.D && this.character.collectedBottles > 0 && ThrowableObject.canThrow()) {
             if (this.character.otherDirection) {
@@ -186,6 +150,9 @@ class World {
         }
     }
 
+    /**
+     * Erstellt eine Flasche nach links.
+     */
     throwBottleLeft() {
         const startX = this.character.x;
         const startY = this.character.y + 50;
@@ -196,6 +163,9 @@ class World {
         this.updateBottleBar();
     }
 
+    /**
+     * Erstellt eine Flasche nach rechts.
+     */
     throwBottleRight() {
         const startX = this.character.x + 100;
         const startY = this.character.y + 50;
@@ -206,19 +176,51 @@ class World {
         this.updateBottleBar();
     }
 
-    checkEndbossDefeated() {
-        const endbossExists = this.level.enemies.some(
-            enemy => enemy instanceof Endboss
-        );
+    /**
+     * Prüft ob das Spiel zu Ende ist (Sieg oder Niederlage).
+     */
+    async checkGameOver() {
+        if (this.character.isDead() && !this.character.isDeadState) {
+            await this.character.die();
+            this.stopGame();
+            this.showGameOverScreen();
+            return;
+        }
 
-        if (!endbossExists) {
+        const endboss = this.level.enemies.find(e => e instanceof Endboss);
+        if (endboss && endboss.energy <= 0 && !endboss.isDead) {
+            await endboss.die();
             this.stopGame();
             this.showWinScreen();
         }
     }
 
+    /**
+     * Zeigt den Gewinnbildschirm.
+     */
+    showWinScreen() {
+        if (this.winScreenShown) return;
+        this.winScreenShown = true;
+        const winScreen = new WinScreen(this.canvas, this.ctx, 'img/9_intro_outro_screens/win/win_2.png');
+        winScreen.display();
+    }
+
+    /**
+     * Zeigt den Game Over-Bildschirm.
+     */
+    showGameOverScreen() {
+        if (this.gameOverShown) return;
+        this.gameOverShown = true;
+        const gameOverScreen = new GameOverScreen(this.canvas, this.ctx, 'img/9_intro_outro_screens/game_over/game over.png');
+        gameOverScreen.display();
+    }
+
+    /**
+     * Prüft alle relevanten Kollisionen im Spiel.
+     */
     checkCollisions() {
         if (!this.character) return;
+
         this.level.enemies.forEach((enemy) => {
             if (enemy instanceof Chicken || enemy instanceof SmallChicken) {
                 if (this.character.isColliding(enemy)) {
@@ -229,25 +231,23 @@ class World {
                         this.statusBar.setPercentage(this.character.energy);
                     }
                 }
-
-                this.throwableObjects.forEach((bottle, bottleIndex) => {
+                this.throwableObjects.forEach((bottle, i) => {
                     if (bottle.isColliding(enemy)) {
                         bottle.playSplashSound();
                         enemy.playDeathAnimation();
-                        this.throwableObjects.splice(bottleIndex, 1);
+                        this.throwableObjects.splice(i, 1);
                     }
                 });
             }
 
             if (enemy instanceof Endboss && !enemy.isDead) {
-                this.throwableObjects.forEach((bottle, bottleIndex) => {
+                this.throwableObjects.forEach((bottle, i) => {
                     if (bottle.isColliding(enemy)) {
                         enemy.loseEnergy(20);
                         this.endbossBar.setPercentage(enemy.energy);
-                        this.throwableObjects.splice(bottleIndex, 1);
+                        this.throwableObjects.splice(i, 1);
                     }
                 });
-
                 if (this.character.isColliding(enemy)) {
                     this.character.hit();
                     this.statusBar.setPercentage(this.character.energy);
@@ -255,17 +255,17 @@ class World {
             }
         });
 
-        this.coins.forEach((coin, coinIndex) => {
+        this.coins.forEach((coin, i) => {
             if (this.character.isColliding(coin)) {
-                this.coins.splice(coinIndex, 1);
+                this.coins.splice(i, 1);
                 this.updateCoinBar();
             }
         });
 
-        this.bottle.forEach((bottle, bottleIndex) => {
+        this.bottle.forEach((bottle, i) => {
             if (this.character.isColliding(bottle)) {
                 if (this.character.canCollectBottle()) {
-                    this.bottle.splice(bottleIndex, 1);
+                    this.bottle.splice(i, 1);
                     this.character.addBottle();
                     this.updateBottleBar();
                 }
@@ -273,61 +273,9 @@ class World {
         });
     }
 
-    async checkGameOver() {
-        if (this.character.isDead() && !this.character.isDeadState) {
-            await this.character.die();
-            this.stopGame();
-            this.showGameOverScreen();
-            return;
-        }
-
-        const endboss = this.level.enemies.find(e => e instanceof Endboss);
-        if (endboss && endboss.energy <= 0 && !endboss.isMarkedForRemoval) {
-            await endboss.die();
-
-            if (endboss.isMarkedForRemoval) {
-                this.stopGame();
-                this.showWinScreen();
-            }
-        }
-    }
-
-    showWinScreen() {
-        if (this.gameOverShown) return;
-
-        this.winScreenShown = true;
-        const winScreen = new WinScreen(this.canvas, this.ctx, 'img/9_intro_outro_screens/win/win_2.png');
-        winScreen.display();
-    }
-
-    showGameOverScreen() {
-        if (this.winScreenShown) return;
-
-        this.gameOverShown = true;
-        const gameOverScreen = new GameOverScreen(this.canvas, this.ctx, 'img/9_intro_outro_screens/game_over/game over.png');
-        gameOverScreen.display();
-    }
-
-    generateCoins() {
-        let coins = [];
-        for (let i = 0; i < 7; i++) {
-            const x = Math.random() * 1000;
-            const y = Math.random() * 300;
-            coins.push(new Coin(x, y));
-        }
-        return coins;
-    }
-
-    generateBottle() {
-        let bottles = [];
-        for (let i = 0; i < 10; i++) {
-            const x = Math.random() * 900;
-            const y = 330;
-            bottles.push(new Bottle(x, y));
-        }
-        return bottles;
-    }
-
+    /**
+     * Hauptzeichenfunktion. Wird dauerhaft per requestAnimationFrame aufgerufen.
+     */
     draw() {
         this.clearAndTranslateCanvas();
         this.drawLevelObjects();
@@ -336,12 +284,12 @@ class World {
         this.updateEventListeners();
         this.animationFrame = requestAnimationFrame(() => this.draw());
     }
-    
+
     clearAndTranslateCanvas() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         this.ctx.translate(this.camera_x, 0);
     }
-    
+
     drawLevelObjects() {
         this.addObjectsToMap(this.level.backgroundObjects);
         if (this.character) this.addToMap(this.character);
@@ -350,50 +298,83 @@ class World {
         this.addObjectsToMap(this.throwableObjects);
         this.addObjectsToMap(this.coins);
         this.addObjectsToMap(this.bottle);
-        this.addObjectsToMap(
-            this.level.enemies.filter(enemy => !enemy.isDead)
-        );
+        this.addObjectsToMap(this.level.enemies.filter(enemy => !enemy.isDead));
         this.ctx.translate(-this.camera_x, 0);
     }
-    
+
     drawUI() {
         this.addToMap(this.statusBar);
         this.addToMap(this.bottleBar);
         this.addToMap(this.endbossBar);
         this.addToMap(this.coinBar);
     }
-    
+
+    drawButtons() {
+        if (window.innerWidth < 630 || window.innerHeight < 600) {
+            this.ctx.lineWidth = 2;
+            for (const key in this.buttonPositions) {
+                let btn = this.buttonPositions[key];
+                this.ctx.beginPath();
+                this.ctx.arc(btn.x + btn.width / 2, btn.y + btn.height / 2, btn.width / 2, 0, 2 * Math.PI);
+                this.ctx.fillStyle = '#e0a800';
+                this.ctx.fill();
+                this.ctx.strokeStyle = '#b8860b';
+                this.ctx.stroke();
+
+                this.ctx.fillStyle = '#000';
+                this.ctx.font = '20px Arial';
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+
+                let symbol = key === "left" ? "⬅️" :
+                             key === "up" ? "⬆️" :
+                             key === "right" ? "➡️" :
+                             key === "throw" ? "🔄" : "";
+
+                this.ctx.fillText(symbol, btn.x + btn.width / 2, btn.y + btn.height / 2);
+            }
+        }
+    }
+
     addObjectsToMap(objects) {
-        objects.forEach(o => {
-            this.addToMap(o);
-        });
+        objects.forEach(o => this.addToMap(o));
     }
 
     addToMap(mo) {
-        if (mo.otherDirection) {
-            this.flipImage(mo);
-        }
+        if (mo.otherDirection) this.flipImage(mo);
         mo.draw(this.ctx);
-        if (mo.otherDirection) {
-            this.flipImageBack(mo);
-        }
+        if (mo.otherDirection) this.flipImageBack(mo);
     }
 
     flipImage(mo) {
         this.ctx.save();
         this.ctx.translate(mo.width, 0);
         this.ctx.scale(-1, 1);
-        mo.x = mo.x * -1;
+        mo.x *= -1;
     }
 
     flipImageBack(mo) {
-        mo.x = mo.x * -1;
+        mo.x *= -1;
         this.ctx.restore();
     }
 
     muteAllSounds() {
         if (this.backgroundSound) {
             this.backgroundSound.muted = !this.backgroundSound.muted;
+        }
+    }
+
+    /**
+     * Alternative Sieganzeige ohne Endboss-Animation.
+     */
+    checkEndbossDefeated() {
+        const endbossExists = this.level.enemies.some(
+            enemy => enemy instanceof Endboss
+        );
+
+        if (!endbossExists) {
+            this.stopGame();
+            this.showWinScreen();
         }
     }
 }

@@ -9,6 +9,26 @@ body {
 body {
     font-family: 'Permanent Marker', serif;
 }
+#impressumLink {
+    position: fixed;
+    bottom: 5px;
+    right: 10px;
+    font-size: 11px;
+    color: rgb(255, 254, 250);
+    z-index: 1000;
+}
+
+#impressumLink a {
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+    font-family: 'Permanent Marker', cursive;
+    opacity: 0.6;
+}
+
+#impressumLink a:hover {
+    opacity: 1;
+}
+
 
 
 .startScreen-image {
