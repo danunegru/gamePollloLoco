@@ -72,4 +72,32 @@ class GameHelper {
             throw: { x: 350 * scaleFactor, y: 400 * scaleFactor, width: 60 * scaleFactor, height: 60 * scaleFactor },
         };
     }
+
+    checkThrowObjects(world) {
+        if (world.keyboard.D && world.character.collectedBottles > 0 && ThrowableObject.canThrow()) {
+            if (world.character.otherDirection) {
+                world.throwBottleLeft();
+            } else {
+                world.throwBottleRight();
+            }
+        }
+    }
+
+    async checkGameOver(world) {
+        if (world.character.isDead() && !world.character.isDeadState) {
+            await world.character.die();
+            world.stopGame();
+            world.showGameOverScreen();
+            return;
+        }
+    
+        const endboss = world.level.enemies.find(e => e instanceof Endboss);
+        if (endboss && endboss.energy <= 0 && !endboss.isDead) {
+            await endboss.die();
+            world.stopGame();
+            world.showWinScreen();
+        }
+    }
+    
+    
 }

@@ -325,8 +325,6 @@ canvas {
         aspect-ratio: 800 / 480;
     }
 
-  
-
 }
 
 @media (max-width: 1024px) {
@@ -374,7 +372,7 @@ canvas {
     }
 }
 
-@media only screen and (max-height: 524px) {
+@media only screen and (max-height: 630px) {
   
     #controls {
         display: none;

@@ -8,18 +8,17 @@ let backgroundSound;
 let isMuted = localStorage.getItem('muted') === 'true';
 
 /**
- * Initializes game UI and sets up the start button.
+ * Initializes the game UI and start button.
  */
 function init() {
     canvas = document.getElementById('canvas');
-    const startScreen = document.getElementById('startScreen');
     const startButton = document.getElementById('startButton');
     initMuteButton();
     startButton.addEventListener('click', startGameHandler);
 }
 
 /**
- * Hides the start screen and begins the main game.
+ * Hides the start screen and starts the game.
  */
 function startGameHandler() {
     document.getElementById('startScreen').style.display = 'none';
@@ -28,11 +27,10 @@ function startGameHandler() {
 }
 
 /**
- * Initializes the game world and starts game logic.
+ * Sets up the game world and starts logic.
  */
 function startMainGame() {
     if (gameStarted) return;
-
     gameStarted = true;
     world = new World(canvas, keyboard);
     initBackgroundSound();
@@ -53,11 +51,10 @@ function initBackgroundSound() {
 }
 
 /**
- * Starts all chicken movement animations.
+ * Starts movement animations for all chickens.
  */
 function startChickens() {
     if (!world?.level?.enemies) return;
-
     world.level.enemies.forEach(enemy => {
         if ((enemy instanceof Chicken || enemy instanceof SmallChicken) &&
             typeof enemy.startMoving === 'function') {
@@ -67,7 +64,7 @@ function startChickens() {
 }
 
 /**
- * Sets up all game control input events.
+ * Sets up both touch and keyboard control events.
  */
 function setupControlEvents() {
     setupTouchEvents();
@@ -75,7 +72,7 @@ function setupControlEvents() {
 }
 
 /**
- * Binds touch and mouse input events.
+ * Binds touch and mouse press/release events.
  */
 function setupTouchEvents() {
     ['mousedown', 'touchstart'].forEach(evt => {
@@ -84,7 +81,6 @@ function setupTouchEvents() {
             world.handleCanvasPress(e, true);
         });
     });
-
     ['mouseup', 'touchend'].forEach(evt => {
         canvas.addEventListener(evt, e => {
             world.handleCanvasPress(e, false);
@@ -94,34 +90,32 @@ function setupTouchEvents() {
 }
 
 /**
- * Binds keyboard input events for gameplay.
+ * Binds keyboard press/release events.
  */
 function setupKeyboardEvents() {
     window.addEventListener('keydown', e => {
         if (!isTouchActive) handleKeyboardPress(e, true);
     });
-
     window.addEventListener('keyup', e => {
         if (!isTouchActive) handleKeyboardPress(e, false);
     });
 }
 
 /**
- * Delays resetting of touch state to prevent false input handling.
+ * Resets touch state after a short delay.
  */
 function resetTouchAfterDelay() {
     setTimeout(() => isTouchActive = false, 500);
 }
 
 /**
- * Calculates scaled coordinates from touch/mouse event.
+ * Converts event to canvas-relative coordinates.
  * @param {Event} event - Touch or mouse event.
  * @returns {{x: number|null, y: number|null}}
  */
 function getTouchPosition(event) {
     const rect = canvas.getBoundingClientRect();
     let { x, y } = getRawTouchCoordinates(event, rect);
-
     if (x !== undefined && y !== undefined) {
         x = (x / rect.width) * canvas.width;
         y = (y / rect.height) * canvas.height;
@@ -131,7 +125,7 @@ function getTouchPosition(event) {
 }
 
 /**
- * Returns raw x/y from touch, mouse, or pointer events.
+ * Extracts raw x/y coordinates from event.
  * @param {Event} event
  * @param {DOMRect} rect
  * @returns {{x: number, y: number}}
@@ -157,9 +151,9 @@ function getRawTouchCoordinates(event, rect) {
 }
 
 /**
- * Handles key press state for game controls.
- * @param {KeyboardEvent} e
- * @param {boolean} isPressed
+ * Handles keyboard press and release for game controls.
+ * @param {KeyboardEvent} e - The event.
+ * @param {boolean} isPressed - Press state.
  */
 function handleKeyboardPress(e, isPressed) {
     switch (e.key) {
@@ -183,28 +177,26 @@ function toggleFullscreen() {
     }
 }
 
-// Set up overlay and orientation after DOM is ready
-
+// Set up info overlay and orientation handling after DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     setupInfoOverlay();
     setupOrientationListener();
 });
 
 /**
- * Shows/hides info overlay on user interaction.
+ * Sets up click events to show/hide the info overlay.
  */
 function setupInfoOverlay() {
     document.getElementById("infoButton").addEventListener("click", () => {
         document.getElementById("overlay").style.display = "block";
     });
-
     document.getElementById("overlay").addEventListener("click", function () {
         this.style.display = "none";
     });
 }
 
 /**
- * Adjusts UI when device orientation changes.
+ * Monitors and adjusts UI on device orientation changes.
  */
 function setupOrientationListener() {
     const checkOrientation = () => {
@@ -213,39 +205,35 @@ function setupOrientationListener() {
             window.matchMedia("(orientation: portrait)").matches;
         message.style.display = isPortrait ? 'block' : 'none';
     };
-
     checkOrientation();
     window.addEventListener('resize', checkOrientation);
     window.addEventListener('orientationchange', checkOrientation);
 }
 
 /**
- * Initializes mute button with saved settings.
+ * Initializes the mute button and applies saved mute state.
  */
 function initMuteButton() {
     const muteButton = document.getElementById('muteButton');
     const muteButtonImg = document.getElementById('muteButtonImg');
-
     muteButtonImg.src = isMuted ? "img/mute-button.png" : "img/muteButton.png";
     setGlobalMute(isMuted);
     muteButton.addEventListener('click', toggleMute);
 }
 
 /**
- * Toggles mute and updates global state + icon.
+ * Toggles mute state and updates the icon + global audio.
  */
 function toggleMute() {
     isMuted = !isMuted;
     localStorage.setItem('muted', isMuted);
-
     const muteButtonImg = document.getElementById('muteButtonImg');
     muteButtonImg.src = isMuted ? "img/mute-button.png" : "img/muteButton.png";
-
     setGlobalMute(isMuted);
 }
 
 /**
- * Mutes/unmutes all game sounds.
+ * Mutes/unmutes all game-related sounds.
  * @param {boolean} muted
  */
 function setGlobalMute(muted) {
@@ -255,12 +243,20 @@ function setGlobalMute(muted) {
     muteThrowableSounds(muted);
 }
 
+/**
+ * Mutes/unmutes world/background sounds.
+ * @param {boolean} muted
+ */
 function muteWorldSounds(muted) {
     if (world?.backgroundSound) {
         world.backgroundSound.muted = muted;
     }
 }
 
+/**
+ * Mutes/unmutes character-related sounds.
+ * @param {boolean} muted
+ */
 function muteCharacterSounds(muted) {
     if (world?.character) {
         world.character.walking_sound.muted = muted;
@@ -268,6 +264,10 @@ function muteCharacterSounds(muted) {
     }
 }
 
+/**
+ * Mutes/unmutes enemy-related sounds.
+ * @param {boolean} muted
+ */
 function muteEnemySounds(muted) {
     if (world?.level?.enemies) {
         world.level.enemies.forEach(enemy => {
@@ -279,11 +279,14 @@ function muteEnemySounds(muted) {
     }
 }
 
+/**
+ * Mutes/unmutes throwable object sounds.
+ * @param {boolean} muted
+ */
 function muteThrowableSounds(muted) {
     if (ThrowableObject?.globalSplashSound) {
         ThrowableObject.globalSplashSound.muted = muted;
     }
-
     if (world?.throwableObjects?.length) {
         world.throwableObjects.forEach(obj => {
             if (obj instanceof ThrowableObject && obj.splashSound) {
